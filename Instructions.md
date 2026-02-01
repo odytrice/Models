@@ -75,18 +75,6 @@ PARAMETER num_ctx 65536
 ollama create qwen2.5-coder-64k -f Modelfile.qwen
 ```
 
-**Qwen3 32B (64K context):**
-
-Create a file named `Modelfile.qwen3`:
-```
-FROM qwen3:32b
-PARAMETER num_ctx 65536
-```
-
-```bash
-ollama create qwen3-64k -f Modelfile.qwen3
-```
-
 ### Step 4: Remove Original Models
 
 Once custom models are created, originals can be removed. Custom models reference the same weight blobs — they won't be deleted.
@@ -171,6 +159,5 @@ print(response.message.content)
 - **DeepSeek R1 temperature:** Set between 0.5-0.7 (0.6 recommended) to avoid incoherent outputs
 - **DeepSeek R1 system prompt:** Works best without one — put all instructions in the user message
 - **System RAM:** 64GB recommended alongside 32GB VRAM for smooth operation
-- **Model choice:** Use DeepSeek R1 for reasoning-heavy tasks, Qwen 2.5 Coder for day-to-day coding, Qwen3 for general-purpose with thinking/non-thinking mode switching
-- **Qwen3 thinking mode:** Use `/think` and `/no_think` in prompts to toggle reasoning mode. Thinking mode is enabled by default
+- **Model choice:** Use DeepSeek R1 for reasoning-heavy tasks, Qwen 2.5 Coder for day-to-day coding
 - **Quantization quality tradeoff:** q8_0 KV cache has negligible quality loss. q4_0 may show slight degradation at very high context sizes
