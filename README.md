@@ -15,10 +15,11 @@ Customized and fine-tuned open source models for local inference on consumer GPU
 
 | Model | Total Params | Active Params | Context Window | Max Output | VRAM (Q4) | Best For |
 |---|---|---|---|---|---|---|
-| DeepSeek R1 Distill 32B | 32B | 32B (dense) | 128K | 32K | ~20 GB | Reasoning, complex debugging, algorithmic tasks |
-| Qwen 2.5 Coder 32B | 32B | 32B (dense) | 128K | — | ~20 GB | Day-to-day coding, code completion, code repair |
-| Qwen3 32B | 32B | 32B (dense) | 32K (128K w/ YaRN) | — | ~20 GB | General + reasoning + coding (thinking/non-thinking modes) |
-| GPT-OSS 20B | 20B | 3.6B (MoE) | 128K | 16K | ~12 GB | Agentic workflows, tool use |
+| DeepSeek R1 Distill 32B | 32B | 32B (dense) | 128K | 32K | 19 GB | Reasoning, complex debugging, algorithmic tasks |
+| Qwen 2.5 Coder 32B | 32B | 32B (dense) | 128K | — | 19 GB | Day-to-day coding, code completion, code repair |
+| Qwen3-Coder 30B-A3B | 30B | 3.3B (MoE) | 256K (1M w/ YaRN) | — | ~18 GB | Agentic coding, tool calling, multi-file edits (OpenCode, Aider, CLINE) |
+| Qwen3 32B | 32B | 32B (dense) | 32K (128K w/ YaRN) | — | 20 GB | General + reasoning + coding (thinking/non-thinking modes) |
+| GPT-OSS 20B | 20B | 3.6B (MoE) | 128K | 16K | 13 GB | Agentic workflows, tool use |
 
 ### Models That Do NOT Fit (for reference)
 
@@ -53,7 +54,9 @@ Ollama on Windows reads system/user environment variables. Set these before laun
 ```bash
 ollama pull deepseek-r1:32b
 ollama pull qwen2.5-coder:32b
+ollama pull qwen3-coder:30b
 ollama pull qwen3:32b
+ollama pull gpt-oss:20b
 ```
 
 ### Step 3: Create DeepSeek R1 Modelfile
@@ -63,11 +66,11 @@ DeepSeek R1 requires a custom Modelfile to set an appropriate context window. Th
 Create a file named `Modelfile.deepseek`:
 ```
 FROM deepseek-r1:32b
-PARAMETER num_ctx 65536
+PARAMETER num_ctx 49152
 ```
 
 ```bash
-ollama create deepseek-r1-64k -f Modelfile.deepseek
+ollama create deepseek-r1-32k -f Modelfile.deepseek
 ```
 
 Once the custom model is created, the original can be removed. The custom model references the same weight blobs — they won't be deleted.
@@ -79,7 +82,7 @@ ollama rm deepseek-r1:32b
 ### Step 4: Run and Verify
 
 ```bash
-ollama run deepseek-r1-64k
+ollama run deepseek-r1-32k
 ```
 
 In another terminal, verify full GPU offload:
@@ -97,10 +100,10 @@ Expected output should show **100% GPU** (or `0%/100% CPU/GPU`). If you see any 
 | Component | VRAM |
 |---|---|
 | OS / display compositor | ~1 GB |
-| Model weights (Q4_K_M, 32B) | ~20 GB |
-| KV cache (q8_0) at 64K ctx | ~10 GB |
+| Model weights (Q4_K_M, 32B) | ~19 GB |
+| KV cache (q8_0) at 48K ctx | ~7.5 GB |
 | Compute buffers / overhead | ~0.5 GB |
-| **Total** | **~31.5 GB** |
+| **Total** | **~29 GB** |
 
 ### KV Cache Memory by Type and Context Size
 
@@ -124,7 +127,7 @@ Ollama exposes a REST API on port 11434:
 
 ```bash
 curl http://localhost:11434/api/chat -d '{
-  "model": "deepseek-r1-64k",
+  "model": "deepseek-r1-32k",
   "messages": [{"role": "user", "content": "Your prompt here"}]
 }'
 ```
@@ -139,7 +142,7 @@ pip install ollama
 from ollama import chat
 
 response = chat(
-    model='deepseek-r1-64k',
+    model='deepseek-r1-32k',
     messages=[{'role': 'user', 'content': 'Your prompt here'}],
 )
 print(response.message.content)
@@ -150,5 +153,7 @@ print(response.message.content)
 - **DeepSeek R1 temperature:** Set between 0.5-0.7 (0.6 recommended) to avoid incoherent outputs
 - **DeepSeek R1 system prompt:** Works best without one — put all instructions in the user message
 - **System RAM:** 64GB recommended alongside 32GB VRAM for smooth operation
-- **Model choice:** Use DeepSeek R1 for reasoning-heavy tasks, Qwen 2.5 Coder for day-to-day coding
+- **Qwen3-Coder inference settings:** temperature=0.7, top_p=0.8, top_k=20, repetition_penalty=1.05 (recommended by Qwen)
+- **Qwen3-Coder mode:** Non-thinking only — no `<think>` blocks. Use Qwen3 32B if you need thinking mode
+- **Model choice:** Use DeepSeek R1 for reasoning-heavy tasks, Qwen3-Coder for agentic coding (OpenCode, Aider), Qwen 2.5 Coder for code completion
 - **Quantization quality tradeoff:** q8_0 KV cache has negligible quality loss. q4_0 may show slight degradation at very high context sizes
