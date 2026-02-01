@@ -2,7 +2,7 @@
 
 Customized and fine-tuned open source models for local inference on consumer GPUs.
 
-This repository contains Ollama Modelfiles and configuration guides for running large language models locally, organized by GPU VRAM tier.
+This repository contains configuration guides for running large language models locally with Ollama, organized by GPU VRAM tier.
 
 ## GPU-Specific Guides
 
@@ -105,39 +105,48 @@ Set these before launching Ollama. On Windows, set as user environment variables
 
 ### Setting Context Size in Ollama
 
-#### Method 1: In a running interactive session
+#### Method 1: Update the model in place (recommended)
+
+Run the model, set the context, and save back to the same tag:
 
 ```
-/set parameter num_ctx 65536
-/save qwen3-coder-64k
+ollama run deepseek-r1:32b
+/set parameter num_ctx 49152
+/save deepseek-r1:32b
 ```
 
-Without `/save`, the setting only applies to the current session.
+This overwrites the model's default context permanently. The weight blobs are shared — no extra disk space is used.
 
 #### Method 2: Via the API (per request)
 
 ```json
 {
-  "model": "qwen3-coder:30b",
+  "model": "deepseek-r1:32b",
   "messages": [...],
   "options": {
-    "num_ctx": 65536
+    "num_ctx": 49152
   }
 }
 ```
 
-#### Method 3: Permanently via a Modelfile
+**Important:** Ollama defaults to 4096 tokens regardless of model capability. OpenCode and similar tools require at least 64K. Always increase this.
 
-```
-FROM qwen3-coder:30b
-PARAMETER num_ctx 65536
-```
+---
+
+## Verifying GPU Offload and VRAM Usage
+
+After loading a model, check its distribution and VRAM usage in another terminal:
 
 ```bash
-ollama create qwen3-coder-64k -f Modelfile
+ollama ps
 ```
 
-**Important:** Ollama defaults to 4096 tokens regardless of model capability. OpenCode and similar tools require at least 64K. Always increase this.
+This shows:
+- **Model name** and size on disk
+- **Processor split** — `100% GPU` means fully offloaded. Any CPU percentage means the model is partially running on system RAM, which dramatically reduces speed.
+- **VRAM used** — total GPU memory consumed by weights + KV cache
+
+If you see CPU offloading, reduce `num_ctx` or switch to `q4_0` KV cache. The goal is always 100% GPU.
 
 ---
 
@@ -185,11 +194,9 @@ print(response.message.content)
 
 ```
 models/
-├── README.md              # This file — universal overview
-├── 24GB-GPU.md            # Models and config for 24GB GPUs
-├── 32GB-GPU.md            # Models and config for 32GB GPUs
-├── DeepSeek-R1/Modelfile  # Custom context for DeepSeek R1 32B
-├── Qwen3-Coder/Modelfile  # Max context for Qwen3-Coder 30B
+├── README.md     # This file — universal overview
+├── 24GB-GPU.md   # Models and config for 24GB GPUs
+├── 32GB-GPU.md   # Models and config for 32GB GPUs
 └── LICENSE
 ```
 

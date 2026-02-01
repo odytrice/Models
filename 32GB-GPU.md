@@ -112,35 +112,24 @@ ollama pull qwen3:14b
 
 ---
 
-## Modelfile Examples
+## Setting Context Per Model
 
-### DeepSeek R1 (custom context)
+Run the model, set the context size, and save back to the same tag to update it in place:
 
-```
-FROM deepseek-r1:32b
-PARAMETER num_ctx 49152
-PARAMETER num_gpu 999
-```
-
-```bash
-ollama create deepseek-r1-48k -f DeepSeek-R1/Modelfile
-```
-
-Once the custom model is created, the original can be removed. The custom model references the same weight blobs — they won't be deleted.
-
-```bash
-ollama rm deepseek-r1:32b
-```
-
-### Qwen3-Coder (max context)
+### DeepSeek R1 (48K context)
 
 ```
-FROM qwen3-coder:30b
-PARAMETER num_ctx 262144
+ollama run deepseek-r1:32b
+/set parameter num_ctx 49152
+/save deepseek-r1:32b
 ```
 
-```bash
-ollama create qwen3-coder-256k -f Qwen3-Coder/Modelfile
+### Qwen3-Coder (128K context — fits within 32GB budget)
+
+```
+ollama run qwen3-coder:30b
+/set parameter num_ctx 131072
+/save qwen3-coder:30b
 ```
 
 ---
@@ -163,13 +152,13 @@ ollama create qwen3-coder-256k -f Qwen3-Coder/Modelfile
 
 ## Verify GPU Offload
 
-After running a model, verify full GPU offload in another terminal:
+After loading a model, verify full GPU offload and check VRAM usage:
 
 ```bash
 ollama ps
 ```
 
-Expected output should show **100% GPU** (or `0%/100% CPU/GPU`). If you see any CPU percentage, reduce `num_ctx` or switch to `q4_0` KV cache.
+Expected output should show **100% GPU**. If you see any CPU percentage, the model is partially running on system RAM — reduce `num_ctx` or switch to `q4_0` KV cache. See [README.md](README.md#verifying-gpu-offload-and-vram-usage) for details.
 
 ---
 
