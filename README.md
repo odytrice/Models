@@ -2,108 +2,65 @@
 
 Customized and fine-tuned open source models for local inference on consumer GPUs.
 
-## Target Hardware
+This repository contains Ollama Modelfiles and configuration guides for running large language models locally, organized by GPU VRAM tier.
 
-- **GPU:** NVIDIA RTX 5090 (32GB GDDR7)
-- **Quantization:** Q4_K_M
-- **KV Cache:** q8_0 (via `OLLAMA_KV_CACHE_TYPE`)
-- **Inference:** Ollama
+## GPU-Specific Guides
 
-## Current Models
+| Guide | VRAM | Example GPUs | Dense Model Range |
+|---|---|---|---|
+| [24GB GPU Guide](24GB-GPU.md) | 24 GB | RTX 4090, RTX 3090, RTX A5000 | 14-25B params |
+| [32GB GPU Guide](32GB-GPU.md) | 32 GB | RTX 5090 | 20-32B params |
 
-### Models That Fit on 32GB VRAM (Q4_K_M)
+---
 
-| Model | Total Params | Active Params | Context Window | Max Output | VRAM (Q4) | Best For |
-|---|---|---|---|---|---|---|
-| DeepSeek R1 Distill 32B | 32B | 32B (dense) | 128K | 32K | 19 GB | Reasoning, complex debugging, algorithmic tasks |
-| Qwen 2.5 Coder 32B | 32B | 32B (dense) | 128K | — | 19 GB | Day-to-day coding, code completion, code repair |
-| Qwen3-Coder 30B-A3B | 30B | 3.3B (MoE) | 256K (1M w/ YaRN) | — | ~18 GB | Agentic coding, tool calling, multi-file edits (OpenCode, Aider, CLINE) |
-| Qwen3 32B | 32B | 32B (dense) | 32K (128K w/ YaRN) | — | 20 GB | General + reasoning + coding (thinking/non-thinking modes) |
-| GPT-OSS 20B | 20B | 3.6B (MoE) | 128K | 16K | 13 GB | Agentic workflows, tool use |
+## Model Selection Principles
 
-### Models That Do NOT Fit (for reference)
+### Parameter Ranges by VRAM
 
-| Model | Total Params | Active Params | Context Window | VRAM (Q4) |
-|---|---|---|---|---|
-| GLM-4.7 Thinking | 358B MoE | ~45B | 200K | ~200+ GB |
-| Kimi K2 | 1T MoE | 32B | 128K-256K | ~245 GB |
-| DeepSeek V3.2 | 685B MoE | ~37B | 128K | ~380+ GB |
+- **24GB GPUs** should target **14-25B parameter dense models**. Quantizing model weights to Q4_K_M frees up VRAM for KV cache, which directly determines how much context the model can use.
+- **32GB GPUs** should target **20-32B parameter dense models**. The extra 8GB of headroom allows dense 32B models to run with usable context windows (64-96K).
+- **MoE models are the exception:** Models like Qwen3-Coder-30B-A3B have 30B total parameters but only 3.3B active parameters per token. They fit on 24GB GPUs despite the high total parameter count because all weights must be loaded, but the active compute is small — resulting in faster inference than equivalently-sized dense models.
 
-## Setup
+### Context Minimums
 
-### Step 1: Set Environment Variables
+- **Reasoning/planning models:** Need **64K+ native context** minimum. Models trained below this cannot hold enough working memory for multi-step reasoning.
+- **Coding agent models:** Need **128K+ native context** minimum. Agentic workflows (OpenCode, Aider, Cline) pass entire files, tool outputs, and conversation history. Anything less is too cramped for the model to work effectively.
 
-Ollama on Windows reads system/user environment variables. Set these before launching:
+### Tool Calling Requirement
 
-1. Quit Ollama from the system tray (right-click icon > Quit)
-2. Open **Settings** > search **"environment variables"** > **"Edit environment variables for your account"**
-3. Add two new user variables:
+**All recommended models must have native tool/function calling support.**
 
-| Variable | Value | Purpose |
-|---|---|---|
-| `OLLAMA_FLASH_ATTENTION` | `1` | Enables flash attention, reduces memory overhead |
-| `OLLAMA_KV_CACHE_TYPE` | `q8_0` | Quantizes KV cache to ~half memory usage |
+Models without native tool calling are excluded regardless of benchmark performance. Native tool calling means the model was trained with tool-use tokens and can reliably generate structured function calls without prompt engineering hacks.
 
-4. Click OK to save
-5. Relaunch Ollama from the Start menu
+Examples of excluded models:
+- **Gemma 3** — prompt-based tool calling only, not reliable for agentic use
+- **Phi-4-Reasoning** — no native tool calling support
+- **DeepCoder-14B** — weak/community-patched tool calling only
 
-**Note:** `OLLAMA_KV_CACHE_TYPE` requires `OLLAMA_FLASH_ATTENTION=1`. Without it, KV cache silently falls back to f16.
+---
 
-### Step 2: Pull Models
+## Quantization and KV Cache
 
-```bash
-ollama pull deepseek-r1:32b
-ollama pull qwen2.5-coder:32b
-ollama pull qwen3-coder:30b
-ollama pull qwen3:32b
-ollama pull gpt-oss:20b
-```
+### Model Quantization
 
-### Step 3: Create DeepSeek R1 Modelfile
+| Format | Bits/Weight | Quality | VRAM Savings vs f16 |
+|---|---|---|---|
+| Q4_K_M | ~4.5 | Good (sweet spot) | ~75% |
+| Q5_K_M | ~5.5 | Better | ~65% |
 
-DeepSeek R1 requires a custom Modelfile to set an appropriate context window. The other models work within 32GB VRAM using their default settings with the environment variables above.
+Q4_K_M is the default recommendation. Q5_K_M is worth using when VRAM budget allows. Both use mixed precision — more important layers keep higher precision.
 
-Create a file named `Modelfile.deepseek`:
-```
-FROM deepseek-r1:32b
-PARAMETER num_ctx 49152
-```
+### KV Cache Quantization
 
-```bash
-ollama create deepseek-r1-32k -f Modelfile.deepseek
-```
+The KV cache stores attention state and grows linearly with context length. Quantizing it is essential for fitting long contexts in VRAM.
 
-Once the custom model is created, the original can be removed. The custom model references the same weight blobs — they won't be deleted.
+| KV Cache Type | Bits | Quality Impact | Memory vs f16 |
+|---|---|---|---|
+| f16 (default) | 16 | Baseline | 1x |
+| q8_0 | 8 | Negligible loss | 0.5x |
+| q4_0 | 4 | Slight degradation at very high context | 0.25x |
 
-```bash
-ollama rm deepseek-r1:32b
-```
-
-### Step 4: Run and Verify
-
-```bash
-ollama run deepseek-r1-32k
-```
-
-In another terminal, verify full GPU offload:
-
-```bash
-ollama ps
-```
-
-Expected output should show **100% GPU** (or `0%/100% CPU/GPU`). If you see any CPU percentage, reduce `num_ctx` or switch to `q4_0` KV cache.
-
-## VRAM Budget Breakdown
-
-### With q8_0 KV Cache (recommended)
-
-| Component | VRAM |
-|---|---|
-| OS / display compositor | ~1 GB |
-| Model weights (Q4_K_M, 32B) | ~19 GB |
-| KV cache (q8_0) at 48K ctx | ~7.5 GB |
-| Compute buffers / overhead | ~0.5 GB |
-| **Total** | **~29 GB** |
+**Recommendation:** Use q8_0 as default. Switch to q4_0 only when you need to push context length further and accept minor quality tradeoffs.
 
 ### KV Cache Memory by Type and Context Size
 
@@ -113,13 +70,87 @@ Expected output should show **100% GPU** (or `0%/100% CPU/GPU`). If you see any 
 | q8_0 | ~5 GB | ~10 GB | ~20 GB |
 | q4_0 | ~2.5 GB | ~5 GB | ~10 GB |
 
-### Max Context by KV Cache Type (32B model on 32GB VRAM)
+---
 
-| KV Cache Type | Max Context (100% GPU) |
-|---|---|
-| f16 (default) | ~24K |
-| q8_0 | ~64K |
-| q4_0 | ~128K |
+## Environment Variables
+
+Set these before launching Ollama. On Windows, set as user environment variables and restart Ollama.
+
+| Variable | Value | Purpose |
+|---|---|---|
+| `OLLAMA_FLASH_ATTENTION` | `1` | Enables flash attention, reduces memory overhead |
+| `OLLAMA_KV_CACHE_TYPE` | `q8_0` | Quantizes KV cache to ~half memory usage |
+
+**Important:** `OLLAMA_KV_CACHE_TYPE` requires `OLLAMA_FLASH_ATTENTION=1`. Without it, KV cache silently falls back to f16.
+
+### Setting Environment Variables on Windows
+
+1. Quit Ollama from the system tray (right-click icon > Quit)
+2. Open **Settings** > search **"environment variables"** > **"Edit environment variables for your account"**
+3. Add the two variables above as new user variables
+4. Click OK to save
+5. Relaunch Ollama from the Start menu
+
+---
+
+## Context Size Reference
+
+| Label | num_ctx Value |
+|-------|---------------|
+| 16K   | 16384         |
+| 32K   | 32768         |
+| 64K   | 65536         |
+| 128K  | 131072        |
+| 256K  | 262144        |
+
+### Setting Context Size in Ollama
+
+#### Method 1: In a running interactive session
+
+```
+/set parameter num_ctx 65536
+/save qwen3-coder-64k
+```
+
+Without `/save`, the setting only applies to the current session.
+
+#### Method 2: Via the API (per request)
+
+```json
+{
+  "model": "qwen3-coder:30b",
+  "messages": [...],
+  "options": {
+    "num_ctx": 65536
+  }
+}
+```
+
+#### Method 3: Permanently via a Modelfile
+
+```
+FROM qwen3-coder:30b
+PARAMETER num_ctx 65536
+```
+
+```bash
+ollama create qwen3-coder-64k -f Modelfile
+```
+
+**Important:** Ollama defaults to 4096 tokens regardless of model capability. OpenCode and similar tools require at least 64K. Always increase this.
+
+---
+
+## Warning: Do Not Exceed a Model's Trained Context Length
+
+Setting `num_ctx` beyond what a model was trained for causes problems:
+
+- **Broken positional embeddings:** The model's RoPE embeddings were only trained up to its stated limit. Beyond that, the model has never learned to attend to those positions, leading to degraded output quality — ignored context, incoherent responses, or repetition loops.
+- **Distant tokens become invisible:** Even though tokens are in the KV cache, the model's attention patterns break down past the training length. Information in the extended region is effectively unreliable or ignored.
+- **VRAM cost is still real:** You pay the full memory cost for the oversized KV cache even though the model can't use it properly.
+- **What to do instead:** Stay at or below the model's stated context limit. If you need more context, pick a model trained for it (e.g. Qwen3-Coder supports 256K natively). Alternatively, use RAG or summarization to fit large codebases into the available window.
+
+---
 
 ## API Usage
 
@@ -127,7 +158,7 @@ Ollama exposes a REST API on port 11434:
 
 ```bash
 curl http://localhost:11434/api/chat -d '{
-  "model": "deepseek-r1-32k",
+  "model": "qwen3-coder:30b",
   "messages": [{"role": "user", "content": "Your prompt here"}]
 }'
 ```
@@ -142,18 +173,33 @@ pip install ollama
 from ollama import chat
 
 response = chat(
-    model='deepseek-r1-32k',
+    model='qwen3-coder:30b',
     messages=[{'role': 'user', 'content': 'Your prompt here'}],
 )
 print(response.message.content)
 ```
 
+---
+
+## Repository Structure
+
+```
+models/
+├── README.md              # This file — universal overview
+├── 24GB-GPU.md            # Models and config for 24GB GPUs
+├── 32GB-GPU.md            # Models and config for 32GB GPUs
+├── DeepSeek-R1/Modelfile  # Custom context for DeepSeek R1 32B
+├── Qwen3-Coder/Modelfile  # Max context for Qwen3-Coder 30B
+└── LICENSE
+```
+
+---
+
 ## Tips
 
-- **DeepSeek R1 temperature:** Set between 0.5-0.7 (0.6 recommended) to avoid incoherent outputs
-- **DeepSeek R1 system prompt:** Works best without one — put all instructions in the user message
-- **System RAM:** 64GB recommended alongside 32GB VRAM for smooth operation
+- **System RAM:** 64GB recommended alongside your GPU VRAM for smooth operation
+- **Quantization quality:** q8_0 KV cache has negligible quality loss. q4_0 may show slight degradation at very high context sizes
 - **Qwen3-Coder inference settings:** temperature=0.7, top_p=0.8, top_k=20, repetition_penalty=1.05 (recommended by Qwen)
 - **Qwen3-Coder mode:** Non-thinking only — no `<think>` blocks. Use Qwen3 32B if you need thinking mode
-- **Model choice:** Use DeepSeek R1 for reasoning-heavy tasks, Qwen3-Coder for agentic coding (OpenCode, Aider), Qwen 2.5 Coder for code completion
-- **Quantization quality tradeoff:** q8_0 KV cache has negligible quality loss. q4_0 may show slight degradation at very high context sizes
+- **DeepSeek R1 temperature:** Set between 0.5-0.7 (0.6 recommended) to avoid incoherent outputs
+- **DeepSeek R1 system prompt:** Works best without one — put all instructions in the user message
