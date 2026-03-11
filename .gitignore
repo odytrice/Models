@@ -7,6 +7,12 @@
 .claude/
 CLAUDE.md
 
+# GGUF model files (large binaries)
+*.gguf
+
+# HuggingFace CLI cache
+.cache/
+
 # User-specific files
 *.rsuser
 *.suo

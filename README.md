@@ -11,6 +11,12 @@ This repository contains configuration guides for running large language models 
 | [24GB GPU Guide](24GB-GPU.md) | 24 GB | RTX 4090, RTX 3090, RTX A5000 | 14-25B params |
 | [32GB GPU Guide](32GB-GPU.md) | 32 GB | RTX 5090 | 20-32B params |
 
+## Custom Models
+
+| Guide | Description |
+|---|---|
+| [Creating Ollama Models from Hugging Face](creating-ollama-models.md) | How to download GGUFs from Hugging Face and create custom Ollama models with your own configuration |
+
 ---
 
 ## Model Selection Principles
@@ -206,9 +212,10 @@ print(response.message.content)
 
 ```
 models/
-├── README.md     # This file — universal overview
-├── 24GB-GPU.md   # Models and config for 24GB GPUs
-├── 32GB-GPU.md   # Models and config for 32GB GPUs
+├── README.md                      # This file — universal overview
+├── 24GB-GPU.md                    # Models and config for 24GB GPUs
+├── 32GB-GPU.md                    # Models and config for 32GB GPUs
+├── creating-ollama-models.md      # Guide: custom Ollama models from HF
 └── LICENSE
 ```
 
