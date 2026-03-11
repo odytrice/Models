@@ -58,6 +58,31 @@ ollama pull ministral-3:14b
 
 ---
 
+## Recommended Context Size (num_ctx)
+
+Ollama defaults to 4096 tokens. Always increase this after pulling a model.
+
+| Model | Ollama Tag | num_ctx | Context |
+|---|---|---|---|
+| GPT-OSS 20B | `gpt-oss:20b` | 131072 | 128K |
+| Devstral-Small-2 24B | `devstral-small-2:24b` | 65536 | 64K |
+| Mistral Small 3.2 24B | `mistral-small3.2:24b` | 65536 | 64K |
+| Qwen3-14B | `qwen3:14b` | 131072 | 128K |
+
+Run the model, set the context, and save back to the same tag to update in place:
+
+```
+ollama run <model:tag>
+/set parameter num_ctx <value>
+/save <model:tag>
+```
+
+Verify with `ollama ps` — if you see any CPU percentage, reduce `num_ctx`.
+
+**Note:** Devstral and Mistral Small 3.2 support higher native context (256K and 128K) but are limited to ~64K here by VRAM. On a [32GB GPU](32GB-GPU.md), these models can use much higher context.
+
+---
+
 ## Benchmark Summary
 
 | Model | SWE-Bench Verified | HumanEval | Aider Polyglot | CodeForces Elo | ArenaHard |

@@ -148,6 +148,18 @@ This shows:
 
 If you see CPU offloading, reduce `num_ctx` or switch to `q4_0` KV cache. The goal is always 100% GPU.
 
+### Forcing All Layers to GPU
+
+Set `num_gpu` to `999` to force all model layers onto the GPU:
+
+```
+ollama run <model:tag>
+/set parameter num_gpu 999
+/save <model:tag>
+```
+
+`999` means "all layers" — Ollama will load as many as exist. If the model doesn't fully fit in VRAM, Ollama will silently offload remaining layers to CPU regardless of this setting. Always verify with `ollama ps`.
+
 ---
 
 ## Warning: Do Not Exceed a Model's Trained Context Length

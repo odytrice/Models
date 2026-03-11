@@ -19,7 +19,9 @@ Recommended models and configuration for GPUs with 32GB VRAM (RTX 5090, etc.).
 
 | Model | Type | Total / Active Params | Context | VRAM (Q4) | Best For |
 |---|---|---|---|---|---|
+| **GLM-4.7-Flash** | MoE | 30B / 3B | 200K | ~18.3 GB | Best SWE-bench in class (59.2%), fast agentic coding |
 | **Qwen3-Coder 30B-A3B** | MoE | 30B / 3.3B | 256K | ~18.6 GB | Agentic coding, tool calling (OpenCode, Aider, Cline) |
+| **GLM-4-32B-0414** | Dense | 32B / 32B | 128K (YaRN) | ~20 GB | Best tool calling (BFCL 69.6), general coding |
 | **Qwen3 32B** | Dense | 32B / 32B | 32K (128K w/ YaRN) | ~20 GB | General + reasoning + coding (thinking/non-thinking modes) |
 | **Qwen 2.5 Coder 32B** | Dense | 32B / 32B | 128K | ~19 GB | Day-to-day coding, code completion, code repair |
 | **DeepSeek R1 Distill 32B** | Dense | 32B / 32B | 128K | ~19 GB | Reasoning, complex debugging, algorithmic tasks |
@@ -30,7 +32,8 @@ Recommended models and configuration for GPUs with 32GB VRAM (RTX 5090, etc.).
 
 | Model | Type | Total / Active Params | Context | VRAM (Q4) | Notes |
 |---|---|---|---|---|---|
-| Nemotron 3 Nano 30B-A3B | Hybrid MoE | 31.6B / 3.5B | 128K | ~18 GB | Tight at 24GB, comfortable here. 68.3% LiveCodeBench v6 |
+| IBM Granite 4.0 H-Small | Hybrid MoE | 32B / 9B | 128K | ~19.5 GB | Top BFCLv3 tool calling, Apache 2.0, ISO 42001 certified |
+| Nemotron 3 Nano 30B-A3B | Hybrid MoE | 31.6B / 3.5B | 128K | ~18 GB | 68.3% LiveCodeBench v6, Mamba-2 hybrid |
 | Qwen3-30B-A3B-Thinking-2507 | MoE | 30B / 3.3B | 262K | ~18.6 GB | Deep reasoning with massive context headroom |
 | Mistral Small 3.2 24B | Dense | 24B / 24B | 128K | ~15 GB | General coding, native tool calling |
 | Qwen3-14B | Dense | 14.8B / 14.8B | 128K | ~9 GB | Fast model with tons of context headroom |
@@ -39,7 +42,7 @@ Recommended models and configuration for GPUs with 32GB VRAM (RTX 5090, etc.).
 
 | Model | Total Params | Active Params | Context Window | VRAM (Q4) |
 |---|---|---|---|---|
-| GLM-4.7 Thinking | 358B MoE | ~45B | 200K | ~200+ GB |
+| GLM-4.7 (Full) | 355B MoE | ~32B | 200K | ~130+ GB |
 | Kimi K2 | 1T MoE | 32B | 128K-256K | ~245 GB |
 | DeepSeek V3.2 | 685B MoE | ~37B | 128K | ~380+ GB |
 
@@ -53,7 +56,9 @@ Recommended models and configuration for GPUs with 32GB VRAM (RTX 5090, etc.).
 
 ```bash
 # Tier 1
+ollama pull glm-4.7-flash
 ollama pull qwen3-coder:30b
+ollama pull sammcj/glm-4-32b-0414
 ollama pull qwen3:32b
 ollama pull qwen2.5-coder:32b
 ollama pull deepseek-r1:32b
@@ -61,6 +66,7 @@ ollama pull gpt-oss:20b
 ollama pull devstral-small-2:24b
 
 # Tier 2
+ollama pull granite4
 ollama pull nemotron-3-nano:30b
 ollama pull qwen3:30b-a3b-thinking-2507-q4_K_M
 ollama pull mistral-small3.2:24b
@@ -71,12 +77,14 @@ ollama pull qwen3:14b
 
 ## Benchmark Summary
 
-| Model | SWE-Bench Verified | HumanEval | Aider Polyglot | CodeForces Elo | ArenaHard |
+| Model | SWE-Bench Verified | HumanEval | Aider Polyglot | BFCL v3 | CodeForces Elo |
 |---|---|---|---|---|---|
+| GLM-4.7-Flash | 59.2% | — | — | — | — |
 | Qwen3-Coder-30B-A3B | 69.6% | — | 61.8% | — | — |
+| GLM-4-32B-0414 | 33.8% (Moatless) | — | — | 69.6 | — |
 | Qwen3 32B | — | — | — | — | — |
 | Qwen2.5-Coder-32B | — | 91.0% | 73.7% (repair) | — | — |
-| DeepSeek-R1-Distill-32B | — | — | — | 1691 | — |
+| DeepSeek-R1-Distill-32B | — | — | — | — | 1691 |
 | GPT-OSS 20B | — | Matches o3-mini | — | — | — |
 | Devstral-Small-2 24B | 68% | — | — | — | — |
 | Nemotron 3 Nano 30B-A3B | — | 78.1% | — | — | — |
@@ -103,34 +111,42 @@ ollama pull qwen3:14b
 | GPT-OSS 20B | ~13 GB | ~18 GB | ~128K (full) |
 | Devstral-Small-2 24B | ~15 GB | ~16 GB | ~128K+ |
 | Mistral Small 3.2 24B | ~15 GB | ~16 GB | ~128K (full) |
+| GLM-4.7-Flash (MoE) | ~18.3 GB | ~12.7 GB | ~96-128K |
 | Qwen3-Coder 30B (MoE) | ~18.6 GB | ~12.4 GB | ~96-128K |
 | DeepSeek R1 32B | ~19 GB | ~12 GB | ~64-96K |
 | Qwen 2.5 Coder 32B | ~19 GB | ~12 GB | ~64-96K |
+| Granite 4.0 H-Small | ~19.5 GB | ~11.5 GB | ~64-96K |
+| GLM-4-32B-0414 | ~20 GB | ~11 GB | ~64-96K |
 | Qwen3 32B | ~20 GB | ~11 GB | ~64-96K |
 
 **32GB advantage:** Dense 32B models get 64-96K context here vs. only ~24-32K on 24GB GPUs. This is why 32B dense models belong on 32GB cards.
 
 ---
 
-## Setting Context Per Model
+## Recommended Context Size (num_ctx)
 
-Run the model, set the context size, and save back to the same tag to update it in place:
+Ollama defaults to 4096 tokens. Always increase this after pulling a model.
 
-### DeepSeek R1 (48K context)
+| Model | Ollama Tag | num_ctx | Context |
+|---|---|---|---|
+| GLM-4.7-Flash | `glm-4.7-flash` | 204800 | 200K |
+| Qwen3-Coder 30B-A3B | `qwen3-coder:30b` | 225280 | 220K |
+| GLM-4-32B-0414 | `sammcj/glm-4-32b-0414` | 131072 | 128K |
+| Qwen3 32B | `qwen3:32b` | 32768 | 32K |
+| Qwen 2.5 Coder 32B | `qwen2.5-coder:32b` | 131072 | 128K |
+| DeepSeek R1 Distill 32B | `deepseek-r1:32b` | 51200 | 50K |
+| GPT-OSS 20B | `gpt-oss:20b` | 131072 | 128K |
+| Devstral-Small-2 24B | `devstral-small-2:24b` | 174080 | 170K |
+
+Run the model, set the context, and save back to the same tag to update in place:
 
 ```
-ollama run deepseek-r1:32b
-/set parameter num_ctx 49152
-/save deepseek-r1:32b
+ollama run <model:tag>
+/set parameter num_ctx <value>
+/save <model:tag>
 ```
 
-### Qwen3-Coder (128K context — fits within 32GB budget)
-
-```
-ollama run qwen3-coder:30b
-/set parameter num_ctx 131072
-/save qwen3-coder:30b
-```
+Verify with `ollama ps` — if you see any CPU percentage, reduce `num_ctx`.
 
 ---
 
@@ -138,8 +154,8 @@ ollama run qwen3-coder:30b
 
 ### Recommended model pairing
 
-- **Primary:** `qwen3-coder:30b` — agentic coding, tool calling, file edits
-- **Reasoning fallback:** `qwen3:32b` or `deepseek-r1-48k` — complex problems requiring step-by-step reasoning
+- **Primary:** `qwen3-coder:30b` or `glm-4.7-flash` — agentic coding, tool calling, file edits
+- **Reasoning fallback:** `qwen3:32b` or `deepseek-r1:32b` — complex problems requiring step-by-step reasoning
 
 ### Inference settings (Qwen3-Coder recommended)
 
@@ -166,17 +182,22 @@ Expected output should show **100% GPU**. If you see any CPU percentage, the mod
 
 | Task | Use This |
 |---|---|
+| Best SWE-bench coding performance | GLM-4.7-Flash |
 | Day-to-day coding with OpenCode/Aider | Qwen3-Coder-30B-A3B |
+| Best tool calling reliability | GLM-4-32B-0414 |
 | Proven code completion / repair | Qwen2.5-Coder-32B |
 | Deep reasoning with traces | DeepSeek-R1-Distill-32B |
 | General reasoning + coding | Qwen3 32B |
 | Need speed or large context headroom | GPT-OSS 20B |
 | Multi-file repo edits | Devstral-Small-2 24B |
+| Enterprise / compliance requirements | IBM Granite 4.0 H-Small |
 
 ---
 
 ## Tips
 
+- **GLM-4-32B-0414:** Use the `sammcj/glm-4-32b-0414` Ollama model — it includes a fixed GGUF with correct tool calling template (the native GLM format is XML; this adapts it for JSON)
+- **GLM-4.7-Flash:** Ollama handles the chat template automatically. If using llama.cpp directly, pass the `--jinja` flag
 - **DeepSeek R1 temperature:** Set between 0.5-0.7 (0.6 recommended) to avoid incoherent outputs
 - **DeepSeek R1 system prompt:** Works best without one — put all instructions in the user message
 - **Qwen3-Coder mode:** Non-thinking only — no `<think>` blocks. Use Qwen3 32B if you need thinking mode
