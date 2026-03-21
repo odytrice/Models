@@ -1,9 +1,0 @@
-FROM ./Qwen3.5-27B.Q4_K_M.gguf
-
-# 24GB GPU config (RTX 4090, RTX 3090)
-# ~16.5 GB weights + ~6.5 GB for KV cache (q8_0) = ~48-64K usable context
-PARAMETER num_ctx 65536
-PARAMETER temperature 0.7
-PARAMETER top_p 0.8
-PARAMETER top_k 20
-PARAMETER repeat_penalty 1.05
