@@ -32,16 +32,18 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # Target data proportions from 02-domain-specialization.md
+# Note: "general_coding" includes both our distilled general samples and
+# OpenCodeInstruct supplemental data (nvidia-oci teacher)
 DOMAIN_PROPORTIONS = {
     "fsharp_core": 0.15,
     "fsharp_libraries": 0.125,
     "svelte_typescript": 0.25,
     "docker_kubernetes": 0.09,
     "agentic_swe": 0.15,
-    "dotnet": 0.05,
+    "dotnet_aspnet": 0.05,
     "cross_domain": 0.05,
     "long_context": 0.075,
-    "general": 0.06,
+    "general_coding": 0.06,
 }
 
 # Context length buckets for progressive training (from 03-distillation-pipeline.md)

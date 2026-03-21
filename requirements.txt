@@ -5,8 +5,8 @@ duckduckgo-search>=7.0
 
 # F# Verification (no additional deps -- uses subprocess to call dotnet)
 
-# Dataset Formatting
-# datasets>=3.0.0  # Uncomment for training environment
+# Dataset Formatting & OpenCodeInstruct Download
+datasets>=3.0.0
 
 # Training (install on GPU machine only)
 # unsloth[cu124]>=2025.3  # Install via: pip install unsloth[cu124]
