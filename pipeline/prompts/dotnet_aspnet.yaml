@@ -1,0 +1,158 @@
+# .NET / ASP.NET Core -- Teacher: DeepSeek V3.2
+# ~5% of total training data
+# Covers: DI, middleware, configuration, hosted services, Kestrel, auth
+
+teacher: deepseek
+domain: dotnet_aspnet
+
+system_prompt: |
+  You are an expert .NET developer writing F#-first ASP.NET Core applications.
+  Show ASP.NET Core patterns from the F# perspective -- use F# syntax, not C#.
+  Follow these conventions:
+  - Use F# functions and partial application for DI where possible
+  - Show idiomatic F# interop with C#-designed ASP.NET Core APIs
+  - Include necessary `open` statements
+  - Target .NET 9 / ASP.NET Core 9
+  - Write concise explanations (2-3 sentences max) before the code
+  Be concise. Return only the code and a brief explanation.
+
+temperature: 0.6
+max_tokens: 4096
+
+prompts:
+  - id: dotnet_0001
+    instruction: |
+      Show how to configure dependency injection in an F# ASP.NET Core application using Giraffe.
+      Register: a singleton configuration service, a scoped repository, and a transient validator.
+      Demonstrate both the C#-style IServiceCollection approach and the idiomatic F# approach
+      using partial application to inject dependencies into HttpHandlers.
+
+  - id: dotnet_0002
+    instruction: |
+      Write custom ASP.NET Core middleware in F# that:
+      1. Logs request method, path, and duration using Serilog
+      2. Adds a correlation ID header (X-Correlation-Id) if not present
+      3. Catches unhandled exceptions and returns a structured JSON error response
+      Show both the IMiddleware interface approach and the RequestDelegate function approach.
+
+  - id: dotnet_0003
+    instruction: |
+      Demonstrate the Options pattern in F# for ASP.NET Core configuration:
+      1. Define configuration record types (DatabaseOptions, CacheOptions, AuthOptions)
+      2. Bind from appsettings.json sections
+      3. Use IOptions<T>, IOptionsSnapshot<T>, and IOptionsMonitor<T> from F#
+      4. Validate options at startup using ValidateDataAnnotations and custom validation
+      Show the full appsettings.json and Program.fs setup.
+
+  - id: dotnet_0004
+    instruction: |
+      Create a BackgroundService (hosted service) in F# that:
+      1. Polls a database for pending jobs every 30 seconds
+      2. Processes jobs with configurable concurrency (SemaphoreSlim)
+      3. Handles graceful shutdown via CancellationToken
+      4. Reports health status via IHealthCheck
+      5. Logs progress with Serilog structured logging
+      Show the service class and DI registration.
+
+  - id: dotnet_0005
+    instruction: |
+      Configure Kestrel server options in F# for a production deployment:
+      1. HTTPS with certificate from file and from certificate store
+      2. HTTP/2 and HTTP/3 configuration
+      3. Request size limits and timeouts
+      4. Listen on specific IP/port combinations
+      5. Configure Keep-Alive and connection limits
+      Show both programmatic configuration and appsettings.json-based configuration.
+
+  - id: dotnet_0006
+    instruction: |
+      Implement JWT authentication and role-based authorization in F# ASP.NET Core:
+      1. Configure JwtBearer authentication with token validation parameters
+      2. Add authorization policies (AdminOnly, UserOrAdmin, RequireTenantAccess)
+      3. Write a custom AuthorizationHandler that checks F# DU-based permissions
+      4. Create a token generation service that produces JWTs with custom claims
+      Show the full setup in Program.fs and usage in Giraffe handlers.
+
+  - id: dotnet_0007
+    instruction: |
+      Demonstrate IHttpClientFactory usage from F# in an ASP.NET Core application:
+      1. Register named HTTP clients with base addresses and default headers
+      2. Register a typed HTTP client with retry policy using Polly
+      3. Write an F# service that uses the typed client with Result error handling
+      4. Configure delegating handlers for logging and authentication token injection
+      Show the DI registration and service implementation.
+
+  - id: dotnet_0008
+    instruction: |
+      Set up health checks in F# ASP.NET Core:
+      1. Built-in checks: PostgreSQL database, disk storage, memory
+      2. Custom health check that verifies external API availability
+      3. Health check UI endpoint (/health) with JSON details
+      4. Configure health check publishing to push results to a monitoring system
+      5. Use health checks with Kubernetes liveness and readiness probes
+      Show the registration, custom check class, and Kubernetes manifest snippet.
+
+  - id: dotnet_0009
+    instruction: |
+      Implement response caching and output caching in F# ASP.NET Core:
+      1. Configure response caching middleware with cache profiles
+      2. Use output caching with tag-based invalidation
+      3. Write a custom output cache policy in F#
+      4. Show cache invalidation when data changes
+      Compare response caching vs output caching and when to use each.
+
+  - id: dotnet_0010
+    instruction: |
+      Configure rate limiting in F# ASP.NET Core:
+      1. Fixed window rate limiter on API endpoints
+      2. Sliding window rate limiter for auth endpoints
+      3. Token bucket rate limiter for file upload endpoints
+      4. Concurrency limiter for expensive operations
+      5. Custom rate limit partitioning by user ID or API key
+      Show the middleware setup and integration with Giraffe route handlers.
+
+  - id: dotnet_0011
+    instruction: |
+      Implement CORS (Cross-Origin Resource Sharing) in F# ASP.NET Core:
+      1. Named CORS policies for different environments (dev permissive, prod restrictive)
+      2. Per-endpoint CORS configuration for Giraffe handlers
+      3. Dynamic origin validation from a database of allowed origins
+      4. Preflight request handling and credentials configuration
+      Show configuration for a SvelteKit frontend at localhost:5173 (dev) and production domain.
+
+  - id: dotnet_0012
+    instruction: |
+      Demonstrate minimal APIs vs Giraffe handlers in F# ASP.NET Core:
+      1. Implement the same CRUD endpoints using minimal APIs
+      2. Implement the same endpoints using Giraffe HttpHandlers
+      3. Compare: routing, model binding, validation, DI, response handling
+      4. Show when to prefer each approach
+      Both versions should use the same service layer and return the same JSON.
+
+  - id: dotnet_0013
+    instruction: |
+      Write an F# ASP.NET Core application that uses SignalR for real-time updates:
+      1. Create a SignalR Hub in F# for broadcasting notifications
+      2. Configure the Hub with JWT authentication
+      3. Send messages from a Giraffe HTTP handler to connected clients
+      4. Show the client-side TypeScript code for connecting from SvelteKit
+      Include the DI registration and middleware configuration.
+
+  - id: dotnet_0014
+    instruction: |
+      Implement structured error handling across an F# ASP.NET Core application:
+      1. Define a global AppError DU (NotFound, Validation, Unauthorized, Internal)
+      2. Write exception middleware that maps exceptions to AppError
+      3. Create a ProblemDetails factory that converts AppError to RFC 7807 responses
+      4. Show how Giraffe handlers return Result<'T, AppError> and the pipeline converts to HTTP
+      5. Include correlation IDs in all error responses
+
+  - id: dotnet_0015
+    instruction: |
+      Show how to run and manage database migrations at application startup in F# ASP.NET Core:
+      1. Register FluentMigrator in the DI container
+      2. Run migrations automatically on startup (dev environment only)
+      3. Run migrations as a separate console command (production)
+      4. Handle migration failures gracefully
+      5. Show a Kubernetes Job manifest that runs migrations before deployment
+      Include the migration classes, DI setup, and deployment strategy.

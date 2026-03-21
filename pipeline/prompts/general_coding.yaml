@@ -1,0 +1,167 @@
+# General Coding & Reasoning -- Teacher: Mixed
+# ~5-10% of total training data
+# Prevents catastrophic forgetting by maintaining general coding ability
+# Teacher varies per prompt based on domain affinity
+
+teacher: deepseek
+domain: general_coding
+
+system_prompt: |
+  You are an expert software engineer. Write clean, well-structured code with clear explanations.
+  Use F# as the primary language unless the prompt specifies otherwise.
+  Follow these conventions:
+  - Include type annotations for clarity
+  - Write idiomatic code for whichever language is used
+  - Explain time/space complexity where relevant
+  - Include example usage or test cases
+  Be concise. Return only the code and a brief explanation.
+
+temperature: 0.6
+max_tokens: 4096
+
+prompts:
+  # --- Algorithms & Data Structures (in F#) ---
+  - id: general_0001
+    instruction: |
+      Implement a generic LRU (Least Recently Used) cache in F# with O(1) get and put operations.
+      Use a combination of a Dictionary and a doubly-linked list.
+      Include: get, put, remove, and size operations.
+      Write property-based style tests that verify the cache invariants.
+
+  - id: general_0002
+    instruction: |
+      Implement Dijkstra's shortest path algorithm in F# using an immutable priority queue.
+      Define the graph as an adjacency list using F# Map.
+      Return both the shortest distances and the actual path.
+      Demonstrate with a weighted graph example.
+
+  - id: general_0003
+    instruction: |
+      Write a parser combinator library in F# from scratch.
+      Include: pchar, pstring, pint, many, many1, choice, between, sepBy.
+      Use the Parser<'T> = string -> Result<'T * string, string> signature.
+      Demonstrate by parsing a simple arithmetic expression (1+2*3).
+
+  - id: general_0004
+    instruction: |
+      Implement a persistent (immutable) red-black tree in F# with insert, lookup, and delete operations.
+      Use discriminated unions for the tree structure (Red/Black nodes).
+      Include a balance function that maintains the red-black invariants after insertion.
+      Show property-based test ideas for tree invariant verification.
+
+  - id: general_0005
+    instruction: |
+      Implement a concurrent producer-consumer queue in F# using MailboxProcessor.
+      Support: multiple producers, single consumer, bounded capacity with back-pressure.
+      Include: enqueue (blocks when full), dequeue (blocks when empty), tryEnqueue, close.
+      Demonstrate with a pipeline that processes items with rate limiting.
+
+  # --- SQL & Database ---
+  - id: general_0006
+    instruction: |
+      Write advanced PostgreSQL queries for an e-commerce analytics database.
+      Include:
+      1. Window functions: running total of sales, rank products by revenue per category
+      2. CTEs: recursive category tree traversal, monthly cohort retention analysis
+      3. JSON operators: query JSONB product attributes, aggregate into JSON arrays
+      4. Full-text search: tsvector indexing and tsquery with ranking
+      Show the CREATE TABLE statements, sample data, and each query with explanation.
+
+  - id: general_0007
+    instruction: |
+      Design a PostgreSQL database schema for a multi-tenant project management application.
+      Include:
+      1. Table definitions with proper types, constraints, and indexes
+      2. Row-level security policies for tenant isolation
+      3. Partitioning strategy for the audit_log table (by month)
+      4. Materialized view for dashboard statistics
+      5. Migration script to set up the schema
+      Explain your indexing decisions and trade-offs.
+
+  # --- System Design ---
+  - id: general_0008
+    instruction: |
+      Design a URL shortener service. Cover:
+      1. API design (create short URL, redirect, analytics)
+      2. Database schema (PostgreSQL)
+      3. Short code generation strategy (base62 encoding, collision handling)
+      4. Caching layer (how to use Redis for hot URLs)
+      5. Analytics (click counting without slowing redirects)
+      6. Scale considerations (what changes at 1M, 100M, 1B URLs)
+      Write the F# implementation for the core service and Giraffe API handlers.
+
+  - id: general_0009
+    instruction: |
+      Design a rate limiter service that supports multiple algorithms.
+      Implement in F#:
+      1. Fixed window counter
+      2. Sliding window log
+      3. Token bucket
+      4. Leaky bucket
+      For each: explain the algorithm, implement it, show trade-offs (memory, accuracy, burst handling).
+      Include a Giraffe middleware that plugs into ASP.NET Core.
+
+  # --- Design Patterns in F# ---
+  - id: general_0010
+    instruction: |
+      Demonstrate how traditional OOP design patterns translate to functional F#:
+      1. Strategy pattern -> higher-order functions
+      2. Observer pattern -> events and Observable
+      3. Builder pattern -> computation expressions
+      4. Decorator pattern -> function composition
+      5. Command pattern -> discriminated unions
+      For each, show the F# implementation and explain why the functional version
+      is often simpler than the OOP equivalent.
+
+  - id: general_0011
+    instruction: |
+      Implement the interpreter pattern in F# for a simple query DSL.
+      Define a DU for query expressions:
+      - Select fields from table
+      - Where clause with And/Or/Not combinators
+      - OrderBy, Limit, Offset
+      Write an interpreter that generates PostgreSQL SQL strings (parameterized, safe from injection).
+      Write a second interpreter that generates a human-readable description.
+      Demonstrate composing complex queries from simple building blocks.
+
+  # --- Testing ---
+  - id: general_0012
+    instruction: |
+      Demonstrate property-based testing in F# using FsCheck.
+      Write property tests for:
+      1. A JSON serializer/deserializer (roundtrip property)
+      2. A sorting function (idempotent, preserves elements, ordered output)
+      3. A string sanitizer (no special chars in output, length bounds, idempotent)
+      4. Custom generators for domain types (valid email, positive money amount)
+      Show how to configure FsCheck with xUnit and how to shrink failing cases.
+
+  - id: general_0013
+    instruction: |
+      Write a test doubles library in F# without any mocking framework.
+      Implement:
+      1. A Stub -- returns a fixed value
+      2. A Spy -- records calls and arguments
+      3. A Fake -- simplified in-memory implementation of a repository interface
+      Use F# functions and closures instead of reflection-based mocking.
+      Show how to use each in a unit test for a service that depends on IUserRepository.
+
+  # --- Security ---
+  - id: general_0014
+    instruction: |
+      Implement secure password handling in F# for a web application:
+      1. Password hashing with Argon2id (using Konscious.Security.Cryptography)
+      2. Password strength validation (length, complexity, common password check)
+      3. Secure random token generation for password reset
+      4. Rate limiting on login attempts (per-user and per-IP)
+      5. Constant-time comparison for hash verification
+      Show the implementation and explain each security decision.
+
+  - id: general_0015
+    instruction: |
+      Demonstrate input validation and sanitization patterns in F# for a web API:
+      1. Type-safe validated types (NonEmptyString, EmailAddress, PositiveInt) using private constructors
+      2. Validation composition using FsToolkit.ErrorHandling
+      3. HTML/XSS sanitization for user-submitted content
+      4. SQL parameterization (show the wrong way and the right way)
+      5. Path traversal prevention for file uploads
+      Explain each attack vector and how the F# type system helps prevent it.

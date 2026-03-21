@@ -1,0 +1,161 @@
+# Cross-Domain Prompts -- Teacher: Kimi K2.5
+# ~5% of total training data
+# High-value prompts that connect F#/Svelte/Docker/K8s together
+
+teacher: kimi
+domain: cross_domain
+
+system_prompt: |
+  You are a senior full-stack developer working with F#, Svelte 5, TypeScript, Docker, and Kubernetes.
+  Write production-quality code that connects multiple technologies in the stack.
+  Follow these conventions:
+  - F# backend: Giraffe, FsToolkit.ErrorHandling, idiomatic functional patterns
+  - Frontend: Svelte 5 with runes ($state, $derived, $effect), TypeScript, SvelteKit 2
+  - Infrastructure: Docker multi-stage builds, Kubernetes manifests, Helm charts
+  - Show all relevant files with clear file path comments
+  - Include type definitions that bridge the frontend and backend
+  Write concise explanations (2-3 sentences max) before each code block.
+
+temperature: 0.7
+max_tokens: 8192
+
+prompts:
+  - id: cross_0001
+    instruction: |
+      Build a full-stack feature: User Registration
+      - F# Giraffe API: POST /api/register with railway-oriented validation using FsToolkit.ErrorHandling
+      - F# domain model: User DU with validation (email format, password strength, username uniqueness)
+      - SvelteKit form action that calls the F# API
+      - Svelte 5 registration form with client-side validation using $state and $derived
+      - TypeScript types that mirror the F# DTOs
+      - Docker multi-stage build for both services
+      Show all files needed for this feature.
+
+  - id: cross_0002
+    instruction: |
+      Build a real-time dashboard:
+      - F# backend: Akka.NET actor that aggregates metrics, SSE endpoint via Giraffe
+      - F# data layer: linq2db queries for historical data from PostgreSQL
+      - SvelteKit frontend: Server load function for initial data, SSE for live updates
+      - Svelte 5 components: Charts with $state for live data, $derived for aggregations
+      - Docker Compose: F# API, SvelteKit frontend, PostgreSQL, all with health checks
+      Show the full implementation.
+
+  - id: cross_0003
+    instruction: |
+      Create a file upload system:
+      - F# Giraffe API: multipart file upload handler, store files in MinIO (S3-compatible)
+      - F# background processing: Akka.NET actor that processes uploaded files (resize images, extract text)
+      - SvelteKit: drag-and-drop upload component with progress bar using $state
+      - TypeScript: typed API client for the upload endpoints
+      - Docker Compose: F# API, SvelteKit, MinIO, PostgreSQL
+      - Kubernetes: deployment with persistent volume for MinIO
+      Show the key files for this feature.
+
+  - id: cross_0004
+    instruction: |
+      Build a full-stack event sourcing example:
+      - F# domain: Model an inventory system with events (ItemAdded, ItemRemoved, StockAdjusted)
+      - F# event store: Append events to PostgreSQL, rebuild state from event stream
+      - F# Giraffe API: Command handlers that validate and produce events, query handlers that read projections
+      - F# Akka.NET: Event projection actor that maintains a read-model
+      - SvelteKit: Inventory management UI with optimistic updates ($state)
+      - TypeScript: Typed event and command definitions matching the F# types
+      Show the architecture and key implementation files.
+
+  - id: cross_0005
+    instruction: |
+      Build a multi-tenant SaaS application scaffold:
+      - F# Giraffe: Tenant-aware middleware that extracts tenant from subdomain/JWT
+      - F# data access: linq2db with automatic tenant filtering (row-level security)
+      - F# domain: Tenant-scoped types using phantom types to prevent cross-tenant access
+      - SvelteKit: Tenant-aware layout with theme customization per tenant
+      - Kubernetes: Namespace-per-tenant isolation, shared database with row-level security
+      - Helm: Parameterized chart for provisioning new tenants
+      Show the architecture and key files.
+
+  - id: cross_0006
+    instruction: |
+      Implement a CI/CD pipeline for the full stack:
+      - GitHub Actions: Build F# API (dotnet test, dotnet publish)
+      - GitHub Actions: Build SvelteKit (npm test, npm run build)
+      - Docker: Build both images, tag with git SHA
+      - Push to GitHub Container Registry
+      - Kubernetes: Rolling deployment with zero-downtime
+      - Database: Run FluentMigrator migrations as a Kubernetes Job before deployment
+      - Health checks: Wait for new pods to be healthy before routing traffic
+      Show the complete workflow YAML and Kubernetes manifests.
+
+  - id: cross_0007
+    instruction: |
+      Build a background job processing system:
+      - F# producer: Giraffe API endpoint that publishes job messages to Kafka
+      - F# consumer: Akka.NET actor that consumes Kafka messages and processes jobs
+      - F# error handling: Dead letter queue for failed jobs, retry with exponential backoff
+      - SvelteKit: Job status dashboard with real-time updates (SSE)
+      - Docker Compose: Kafka, Zookeeper, F# API, F# worker, SvelteKit, PostgreSQL
+      - Kubernetes: Separate deployments for API and worker, Kafka via Helm chart
+      Show the key implementation files.
+
+  # --- New seeds: Uncovered cross-domain topics ---
+  - id: cross_0008
+    instruction: |
+      Build a full-stack OAuth2/OIDC authentication system:
+      - F# Giraffe backend: OAuth2 authorization code flow with PKCE
+      - F# backend: Token exchange, refresh tokens, session management with cookies
+      - F# backend: Role and permission claims in JWT, authorization middleware
+      - SvelteKit frontend: Login page that redirects to OAuth provider
+      - SvelteKit: hooks.server.ts that validates tokens and refreshes expired sessions
+      - SvelteKit: Protected routes and role-based UI rendering
+      - TypeScript: Auth context and typed user session interface
+      Show all files for a complete auth implementation (not using a third-party auth library).
+
+  - id: cross_0009
+    instruction: |
+      Build full-text search across the stack:
+      - PostgreSQL: Set up tsvector columns and GIN indexes on the products table
+      - F# data access: linq2db queries using PostgreSQL full-text search operators
+      - F# Giraffe API: Search endpoint with pagination, highlighting, and facets
+      - F# service: Search result ranking and relevance scoring
+      - SvelteKit: Search UI with debounced input ($state), instant results ($derived)
+      - SvelteKit: Search result highlighting, "did you mean" suggestions
+      - TypeScript: Typed search request/response matching F# DTOs
+      Show the complete implementation from database to UI.
+
+  - id: cross_0010
+    instruction: |
+      Build a real-time WebSocket chat system:
+      - F# backend: ASP.NET Core WebSocket middleware with connection management
+      - F# domain: Chat message types (Text, Image, System), room management DUs
+      - F# persistence: Store messages in PostgreSQL, load history on connect
+      - F# Akka.NET: Actor per chat room for message routing and presence tracking
+      - SvelteKit: Chat UI component with $state for messages, $effect for WebSocket
+      - SvelteKit: User presence indicators, typing indicators, message status
+      - TypeScript: WebSocket message protocol types matching F# DUs
+      - Docker Compose: All services with proper networking
+      Show the key implementation files.
+
+  - id: cross_0011
+    instruction: |
+      Build a data export and reporting system:
+      - F# service: Generate PDF reports using PdfPig (monthly sales summary)
+      - F# service: Generate CSV exports using CsvHelper (user data export)
+      - F# service: Generate XLSX reports using DocumentFormat.OpenXml
+      - F# Giraffe API: Async report generation endpoints with job status
+      - F# Akka.NET: Background actor for long-running report generation
+      - SvelteKit: Report request page with format selection
+      - SvelteKit: Download progress and notification when report is ready (SSE)
+      Show the complete flow from request to file download.
+
+  - id: cross_0012
+    instruction: |
+      Build a full-stack observability system:
+      - F# backend: Structured logging with Serilog (correlation IDs, request context)
+      - F# backend: Metrics endpoint with Prometheus counters, histograms, gauges
+      - F# backend: Distributed tracing with OpenTelemetry (trace API requests end-to-end)
+      - F# middleware: Automatic request/response logging with duration and status
+      - SvelteKit: Error reporting from client to backend error tracking endpoint
+      - SvelteKit: Admin dashboard showing live metrics and recent errors ($state + SSE)
+      - Docker Compose: Prometheus, Grafana, Jaeger for local observability stack
+      - Kubernetes: ServiceMonitor, PrometheusRule for alerting
+      Show the key implementation files across all layers.

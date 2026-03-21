@@ -1,0 +1,276 @@
+# Long-Context Samples -- Teacher: Kimi K2.5
+# ~5-10% of total training data
+# Covers: full project walkthroughs, multi-file analysis, large codebase comprehension
+# These prompts target 32K-204K token responses.
+# Only Kimi K2.5 has 256K context to generate these samples at full quality.
+
+teacher: kimi
+domain: long_context
+
+system_prompt: |
+  You are a senior full-stack developer writing comprehensive, production-quality code.
+  Your responses should be thorough and detailed -- include ALL files needed for a complete implementation.
+  For each file, include the full path as a comment and the complete implementation (not truncated).
+  Use this stack:
+  - Backend: F# with Giraffe, FsToolkit.ErrorHandling, ASP.NET Core
+  - Frontend: Svelte 5 with runes, SvelteKit 2, TypeScript
+  - Data: PostgreSQL, linq2db or Npgsql
+  - Infrastructure: Docker, docker-compose
+  Include: type definitions, error handling, validation, logging, and configuration.
+  Do NOT abbreviate or use "..." -- write the complete code for every file.
+
+temperature: 0.7
+max_tokens: 16384
+
+prompts:
+  - id: long_0001
+    instruction: |
+      Build a complete F# Giraffe REST API for a task management system.
+      Include ALL of the following files with complete implementations:
+
+      1. Domain types (Task, User, Priority DUs, validation types)
+      2. Data access layer (linq2db table mappings, repository with CRUD)
+      3. Service layer (business logic with FsToolkit.ErrorHandling taskResult CEs)
+      4. HTTP handlers (Giraffe handlers for all CRUD endpoints)
+      5. Authentication middleware (JWT validation)
+      6. Route configuration
+      7. Program.fs (DI setup, middleware pipeline, Kestrel config)
+      8. FluentMigrator migrations (Users, Tasks tables)
+      9. appsettings.json
+      10. Dockerfile (multi-stage build)
+
+      This should be a production-ready API that compiles and runs.
+
+  - id: long_0002
+    instruction: |
+      Build a complete SvelteKit 2 frontend application for a project management dashboard.
+      Include ALL of the following files with complete implementations:
+
+      1. src/routes/+layout.svelte (navigation, auth guard)
+      2. src/routes/+layout.server.ts (session validation)
+      3. src/routes/+page.svelte (dashboard with stats)
+      4. src/routes/+page.server.ts (load function for dashboard data)
+      5. src/routes/projects/+page.svelte (project list with filtering and sorting)
+      6. src/routes/projects/[id]/+page.svelte (project detail with tasks)
+      7. src/routes/projects/[id]/+page.server.ts (load + form actions)
+      8. src/routes/login/+page.svelte (login form)
+      9. src/routes/login/+page.server.ts (login action with cookies)
+      10. src/lib/components/DataTable.svelte (reusable table with $state)
+      11. src/lib/components/Modal.svelte (dialog with snippets)
+      12. src/lib/api.ts (typed API client)
+      13. src/lib/types.ts (TypeScript interfaces matching F# backend)
+      14. src/hooks.server.ts (auth hook)
+
+      Use Svelte 5 runes throughout. All TypeScript, no JavaScript.
+
+  - id: long_0003
+    instruction: |
+      Perform a comprehensive code review and refactoring of this F# Giraffe application.
+      The code works but has many issues. Identify ALL problems and provide the fixed version.
+
+      ```fsharp
+      // Program.fs -- the entire application in one file
+      open System
+      open Microsoft.AspNetCore.Builder
+      open Microsoft.Extensions.DependencyInjection
+      open Giraffe
+      open Npgsql
+
+      let mutable connectionString = "Host=localhost;Database=mydb;Username=postgres;Password=postgres"
+
+      type User = { Id: int; Name: string; Email: string; Password: string }
+
+      let getUsers : HttpHandler = fun next ctx -> task {
+          use conn = new NpgsqlConnection(connectionString)
+          conn.Open()
+          let cmd = new NpgsqlCommand("SELECT * FROM users", conn)
+          let reader = cmd.ExecuteReader()
+          let mutable users = []
+          while reader.Read() do
+              users <- { Id = reader.GetInt32(0); Name = reader.GetString(1); Email = reader.GetString(2); Password = reader.GetString(3) } :: users
+          return! json users next ctx
+      }
+
+      let createUser : HttpHandler = fun next ctx -> task {
+          let! user = ctx.BindJsonAsync<User>()
+          use conn = new NpgsqlConnection(connectionString)
+          conn.Open()
+          let cmd = new NpgsqlCommand($"INSERT INTO users (name, email, password) VALUES ('{user.Name}', '{user.Email}', '{user.Password}')", conn)
+          cmd.ExecuteNonQuery() |> ignore
+          return! json {| message = "created" |} next ctx
+      }
+
+      let deleteUser (id: int) : HttpHandler = fun next ctx -> task {
+          use conn = new NpgsqlConnection(connectionString)
+          conn.Open()
+          let cmd = new NpgsqlCommand($"DELETE FROM users WHERE id = {id}", conn)
+          cmd.ExecuteNonQuery() |> ignore
+          return! json {| message = "deleted" |} next ctx
+      }
+
+      let webApp = choose [
+          GET >=> route "/users" >=> getUsers
+          POST >=> route "/users" >=> createUser
+          DELETE >=> routef "/users/%i" deleteUser
+      ]
+
+      [<EntryPoint>]
+      let main args =
+          let builder = WebApplication.CreateBuilder(args)
+          builder.Services.AddGiraffe() |> ignore
+          let app = builder.Build()
+          app.UseGiraffe(webApp)
+          app.Run()
+          0
+      ```
+
+      Issues to find and fix: SQL injection, password storage, no DI, mutable state,
+      no error handling, no validation, no logging, no configuration, monolithic structure,
+      exposing passwords in API responses. Provide the refactored multi-file solution.
+
+  - id: long_0004
+    instruction: |
+      Design and implement a complete event sourcing system for an inventory management domain in F#.
+      Include ALL files:
+
+      1. Domain events (ItemCreated, StockAdded, StockRemoved, PriceChanged, ItemDiscontinued)
+      2. Aggregate state and apply function
+      3. Command handlers with validation
+      4. Event store (PostgreSQL-backed, append-only)
+      5. Projection for read model (current inventory view)
+      6. Akka.NET actor for processing events and maintaining projections
+      7. Giraffe API with command endpoints and query endpoints
+      8. Service layer composing commands with FsToolkit.ErrorHandling
+      9. Database migrations for event store and projection tables
+      10. Integration test demonstrating the full event lifecycle
+
+      Show the complete implementation with proper F# types making illegal states unrepresentable.
+
+  - id: long_0005
+    instruction: |
+      Build a complete full-stack feature: real-time collaborative document editing.
+      Include ALL files for both backend and frontend:
+
+      Backend (F#):
+      1. Document and Edit domain types (F# DUs for operations: Insert, Delete, Replace)
+      2. Operational transform / CRDT logic for conflict resolution
+      3. SignalR Hub for broadcasting edits to connected clients
+      4. Giraffe endpoints for document CRUD
+      5. PostgreSQL persistence for documents and edit history
+      6. Program.fs with full DI and middleware setup
+
+      Frontend (SvelteKit):
+      1. Document editor component with contenteditable and $state
+      2. SignalR client connection management in $effect
+      3. Real-time cursor positions of other users
+      4. Document list page with SvelteKit load function
+      5. TypeScript types matching the F# domain types
+      6. Optimistic update handling
+
+      Docker:
+      1. docker-compose.yml with F# API, SvelteKit, PostgreSQL
+
+  - id: long_0006
+    instruction: |
+      Write a comprehensive migration guide: upgrading a full SvelteKit application from Svelte 4 to Svelte 5.
+      Include complete before/after code for EVERY pattern that changed:
+
+      1. Stores ($writable, $derived) -> Runes ($state, $derived)
+      2. Reactive declarations ($:) -> $derived and $effect
+      3. Lifecycle (onMount, onDestroy) -> $effect with cleanup
+      4. export let -> $props
+      5. <slot> -> Snippets
+      6. createEventDispatcher -> callback props
+      7. $$slots -> snippets presence checking
+      8. <svelte:component this={...}> -> dynamic component changes
+      9. Store contract ($subscribe) -> signal-based reactivity
+      10. Context API changes
+
+      For each pattern, show: the Svelte 4 code, the Svelte 5 equivalent, common pitfalls,
+      and edge cases. Use realistic component examples, not toy demos.
+
+  - id: long_0007
+    instruction: |
+      Build a complete CI/CD pipeline and Kubernetes deployment for an F# + SvelteKit application.
+      Include ALL files:
+
+      1. Dockerfiles for both services (multi-stage, optimized)
+      2. docker-compose.yml for local development
+      3. GitHub Actions workflow (.github/workflows/deploy.yml):
+         - Build and test F# API (dotnet test)
+         - Build and test SvelteKit (npm test)
+         - Build Docker images, push to GHCR
+         - Run FluentMigrator migrations as K8s Job
+         - Deploy to Kubernetes with rolling update
+      4. Kubernetes manifests:
+         - API Deployment, Service, Ingress, HPA
+         - Frontend Deployment, Service, Ingress
+         - PostgreSQL StatefulSet with PVC
+         - ConfigMaps and Secrets
+         - NetworkPolicy for isolation
+      5. Helm chart (Chart.yaml, values.yaml, templates/)
+      6. Monitoring: Prometheus ServiceMonitor, basic Grafana dashboard JSON
+
+      Everything should be production-grade and work together.
+
+  - id: long_0008
+    instruction: |
+      Write a complete test suite for an F# Giraffe API application.
+      Include ALL test files:
+
+      1. Unit tests for domain validation functions (FsUnit + xUnit)
+      2. Unit tests for service layer with mocked dependencies
+      3. Property-based tests with FsCheck for domain invariants
+      4. Integration tests using WebApplicationFactory (TestServer)
+      5. Integration tests for database operations (using Testcontainers for PostgreSQL)
+      6. End-to-end API tests (full request/response cycle)
+      7. Test helpers and fixtures
+      8. Test project file (.fsproj) with all dependencies
+
+      Show realistic tests for: user registration validation, authentication flow,
+      CRUD operations, error handling, and edge cases. Use idiomatic F# test patterns.
+
+  - id: long_0009
+    instruction: |
+      Build a complete multi-tenant SaaS application scaffold.
+      Include ALL files for the full stack:
+
+      Backend (F#):
+      1. Tenant domain types with phantom type safety (TenantId<'T>)
+      2. Tenant resolution middleware (from subdomain and JWT)
+      3. Tenant-scoped data access (automatic WHERE tenant_id = @tid on all queries)
+      4. Tenant provisioning service (create database schema, seed data)
+      5. Giraffe API with tenant-aware handlers
+      6. Row-level security PostgreSQL setup
+
+      Frontend (SvelteKit):
+      1. Tenant-aware layout with dynamic theming
+      2. Tenant context hook
+      3. API client that includes tenant headers
+
+      Infrastructure:
+      1. Kubernetes namespace-per-tenant manifest generator
+      2. Helm values for new tenant provisioning
+
+  - id: long_0010
+    instruction: |
+      Write comprehensive documentation for an F# library that provides
+      railway-oriented programming utilities (similar to FsToolkit.ErrorHandling).
+      Include:
+
+      1. Overview and philosophy (why railway-oriented programming)
+      2. Installation and getting started
+      3. API reference for every function with type signatures and examples:
+         - Result module (map, bind, mapError, tee, teeError, apply, traverse, sequence)
+         - Option module (map, bind, defaultValue, ofResult, toResult)
+         - Validation module (ofResult, apply, map, traverse)
+         - Computation expressions (result {}, asyncResult {}, taskResult {})
+      4. Recipes and patterns:
+         - Form validation with accumulated errors
+         - Database transaction with rollback on error
+         - Multi-step API call pipeline
+         - Parsing and transformation pipeline
+      5. Migration guide from nested match expressions to CEs
+      6. FAQ and common mistakes
+
+      Write this as a complete markdown document with runnable F# code examples.

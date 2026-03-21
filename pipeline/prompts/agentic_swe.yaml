@@ -1,0 +1,420 @@
+# Agentic SWE Tasks -- Teacher: MiniMax M2.7
+# ~15% of total training data
+# Covers: multi-step bug fixes, refactoring, debugging, code review
+
+teacher: minimax
+domain: agentic_swe
+
+system_prompt: |
+  You are an expert software engineer solving real-world coding tasks.
+  Think step by step through the problem before writing code.
+  Follow this approach:
+  1. Analyze the problem -- identify root cause, not just symptoms
+  2. Plan the fix -- describe what you will change and why
+  3. Implement the fix -- write the corrected code
+  4. Verify -- explain how to test that the fix works
+  Show your reasoning process. This is valuable for training.
+  Use the appropriate language/framework for each task (F#, Svelte, TypeScript, Docker, K8s).
+
+temperature: 0.5
+max_tokens: 8192
+
+prompts:
+  # --- Bug Fixing ---
+  - id: agentic_0001
+    instruction: |
+      Bug report: The F# Giraffe API returns 500 on POST /api/orders when the optional "notes" field
+      is missing from the JSON body. The error log shows: System.NullReferenceException at Thoth.Json decoding.
+
+      Here's the handler code:
+      ```fsharp
+      let createOrderHandler : HttpHandler =
+          fun next ctx -> task {
+              let! body = ctx.ReadBodyFromRequestAsync()
+              let order = Decode.Auto.fromString<CreateOrderDto>(body)
+              match order with
+              | Ok dto -> // process order
+              | Error e -> return! RequestErrors.BAD_REQUEST e next ctx
+          }
+      ```
+
+      And the DTO:
+      ```fsharp
+      type CreateOrderDto = {
+          CustomerId: string
+          Items: OrderItem list
+          Notes: string
+      }
+      ```
+
+      Diagnose the issue and provide the fix.
+
+  - id: agentic_0002
+    instruction: |
+      Bug report: The SvelteKit app has a hydration mismatch error on the dashboard page.
+      The server-rendered HTML shows different data than what the client renders.
+
+      The load function:
+      ```typescript
+      // src/routes/dashboard/+page.server.ts
+      export async function load({ locals }) {
+        const stats = await getStats(locals.user.id);
+        return {
+          stats,
+          generatedAt: new Date().toISOString()
+        };
+      }
+      ```
+
+      The component:
+      ```svelte
+      <script lang="ts">
+        let { data } = $props();
+        let currentTime = $state(new Date().toISOString());
+      </script>
+      <p>Generated: {data.generatedAt}</p>
+      <p>Current: {currentTime}</p>
+      ```
+
+      Identify why the hydration mismatch occurs and fix it.
+
+  - id: agentic_0003
+    instruction: |
+      Bug report: The Akka.NET actor system is losing messages under high load.
+      About 5% of messages are dropped when throughput exceeds 10,000 msg/sec.
+
+      Current actor:
+      ```fsharp
+      let orderProcessor (mailbox: Actor<OrderMessage>) =
+          let rec loop () = actor {
+              let! msg = mailbox.Receive()
+              match msg with
+              | ProcessOrder order ->
+                  let! result = processOrderAsync order |> Async.AwaitTask
+                  mailbox.Sender() <! OrderProcessed result
+                  return! loop ()
+              | GetStatus ->
+                  mailbox.Sender() <! CurrentStatus (getStatus())
+                  return! loop ()
+          }
+          loop ()
+      ```
+
+      The actor is created with default settings. Analyze the issue and provide a solution
+      considering: mailbox capacity, dispatcher config, supervision, and back-pressure.
+
+  # --- Refactoring ---
+  - id: agentic_0004
+    instruction: |
+      Refactor this F# code that has deeply nested pattern matching into railway-oriented programming
+      using FsToolkit.ErrorHandling:
+
+      ```fsharp
+      let processApplication (app: Application) =
+          match validateName app.Name with
+          | Error e -> Error e
+          | Ok name ->
+              match validateEmail app.Email with
+              | Error e -> Error e
+              | Ok email ->
+                  match validateAge app.Age with
+                  | Error e -> Error e
+                  | Ok age ->
+                      match checkDuplicate email with
+                      | Error e -> Error e
+                      | Ok () ->
+                          match saveToDatabase { Name = name; Email = email; Age = age } with
+                          | Error e -> Error e
+                          | Ok id -> Ok { ApplicationId = id; Status = "Approved" }
+      ```
+
+      Show the refactored version using result { } and explain the improvement.
+
+  - id: agentic_0005
+    instruction: |
+      Refactor this SvelteKit component from Svelte 4 syntax to Svelte 5 runes:
+
+      ```svelte
+      <script lang="ts">
+        import { writable, derived } from 'svelte/store';
+        import { onMount, onDestroy } from 'svelte';
+
+        export let items: Item[] = [];
+        export let filterText = '';
+
+        const searchStore = writable(filterText);
+        const filteredItems = derived(searchStore, $search =>
+          items.filter(item => item.name.toLowerCase().includes($search.toLowerCase()))
+        );
+
+        let intervalId: number;
+        onMount(() => {
+          intervalId = setInterval(() => {
+            // refresh data
+          }, 30000);
+        });
+        onDestroy(() => clearInterval(intervalId));
+      </script>
+
+      <input bind:value={$searchStore} placeholder="Search..." />
+      {#each $filteredItems as item}
+        <div>{item.name}</div>
+      {/each}
+      <slot />
+      ```
+
+      Convert all stores to $state/$derived, lifecycle to $effect, export to $props, and slots to snippets.
+
+  # --- Debugging ---
+  - id: agentic_0006
+    instruction: |
+      Debug this Docker build that takes 15 minutes and produces a 2.3GB image for a simple F# API:
+
+      ```dockerfile
+      FROM mcr.microsoft.com/dotnet/sdk:9.0
+      WORKDIR /src
+      COPY . .
+      RUN dotnet restore "MyApi/MyApi.fsproj"
+      RUN dotnet build "MyApi/MyApi.fsproj" -c Release
+      RUN dotnet publish "MyApi/MyApi.fsproj" -c Release -o /app
+      WORKDIR /app
+      EXPOSE 8080
+      ENTRYPOINT ["dotnet", "MyApi.dll"]
+      ```
+
+      Identify all issues (layer caching, image size, build stages, security) and provide
+      an optimized Dockerfile that produces a <100MB image and builds in under 2 minutes.
+
+  - id: agentic_0007
+    instruction: |
+      Debug this Kubernetes deployment where pods are healthy but the service returns 502:
+
+      ```yaml
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: api
+      spec:
+        replicas: 3
+        selector:
+          matchLabels:
+            app: api
+        template:
+          metadata:
+            labels:
+              app: my-api  # <-- note the label
+          spec:
+            containers:
+            - name: api
+              image: myregistry/api:v1.2.3
+              ports:
+              - containerPort: 8080
+      ---
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: api-service
+      spec:
+        selector:
+          app: api  # <-- note the selector
+        ports:
+        - port: 80
+          targetPort: 8080
+      ```
+
+      Walk through the debugging process and identify the root cause.
+
+  # --- Code Review ---
+  - id: agentic_0008
+    instruction: |
+      Review this F# Giraffe API code and identify issues related to:
+      security, performance, error handling, and idiomatic F# patterns.
+
+      ```fsharp
+      let getUserHandler (id: string) : HttpHandler =
+          fun next ctx -> task {
+              let connStr = "Host=localhost;Database=mydb;Username=admin;Password=secret123"
+              use conn = new NpgsqlConnection(connStr)
+              conn.Open()
+              let cmd = new NpgsqlCommand($"SELECT * FROM users WHERE id = '{id}'", conn)
+              let reader = cmd.ExecuteReader()
+              if reader.Read() then
+                  let user = {|
+                      Id = reader.GetString(0)
+                      Name = reader.GetString(1)
+                      Email = reader.GetString(2)
+                  |}
+                  return! json user next ctx
+              else
+                  return! RequestErrors.NOT_FOUND "User not found" next ctx
+          }
+      ```
+
+      List all issues, explain the risks, and provide a corrected version.
+
+  - id: agentic_0009
+    instruction: |
+      Review this SvelteKit component for performance issues:
+
+      ```svelte
+      <script lang="ts">
+        let { items } = $props<{ items: Product[] }>();
+        let sortBy = $state('name');
+        let filterText = $state('');
+
+        let processed = $derived(
+          items
+            .filter(i => i.name.toLowerCase().includes(filterText.toLowerCase()))
+            .sort((a, b) => {
+              if (sortBy === 'name') return a.name.localeCompare(b.name);
+              if (sortBy === 'price') return a.price - b.price;
+              return 0;
+            })
+            .map(i => ({ ...i, displayPrice: `$${i.price.toFixed(2)}` }))
+        );
+      </script>
+
+      {#each processed as item}
+        <ProductCard product={item} onAddToCart={() => addToCart(item)} />
+      {/each}
+      ```
+
+      Identify performance issues (especially with large lists) and provide optimizations.
+
+  # --- Multi-Step Tasks ---
+  - id: agentic_0010
+    instruction: |
+      Task: Add a new "notifications" feature to an existing F# + SvelteKit application.
+      Plan and implement the following steps:
+
+      1. F# backend: Create a Notification DU type, a Giraffe API endpoint for CRUD,
+         and an Akka.NET actor that sends real-time notifications
+      2. Database: Write FluentMigrator migration for the notifications table
+      3. SvelteKit frontend: Create a notification bell component with $state,
+         SSE connection for real-time updates, and a notification list page
+      4. Docker: Update docker-compose to include any new services needed
+
+      Show all the code files needed for this feature.
+
+  # --- New seeds: Uncovered agentic tasks ---
+  - id: agentic_0011
+    instruction: |
+      Performance issue: This F# Giraffe API endpoint takes 3 seconds to load a user's dashboard.
+      The endpoint calls getUserById, then getOrdersByUserId, then getProductsByOrderIds.
+
+      ```fsharp
+      let dashboardHandler (userId: string) : HttpHandler =
+          fun next ctx -> task {
+              let! user = getUserById userId
+              let! orders = getOrdersByUserId userId
+              let! products =
+                  orders
+                  |> List.map (fun o -> getProductsByOrderId o.Id)
+                  |> Async.Sequential
+                  |> Async.StartAsTask
+              return! json {| User = user; Orders = orders; Products = products |} next ctx
+          }
+      ```
+
+      Identify the N+1 query problem, the sequential execution issue, and provide a fix
+      using parallel execution, batched queries, and linq2db joins.
+
+  - id: agentic_0012
+    instruction: |
+      Task: Practice TDD (Test-Driven Development) for an F# domain service.
+
+      Specification: Build a discount calculation service for an e-commerce system.
+      Rules:
+      - Orders over $100 get 10% off
+      - Members get an additional 5% off
+      - Coupon codes apply a fixed dollar amount (validated against a list)
+      - Discounts stack but total can never go below $0
+      - Free shipping for orders over $50 after discounts
+
+      Write the tests FIRST using FsUnit.xUnit, then implement the service
+      to make all tests pass. Show the red-green-refactor cycle explicitly.
+
+  - id: agentic_0013
+    instruction: |
+      Task: Upgrade an F# project from Akka.NET 1.4 to Akka.NET 1.5.
+
+      The existing code uses deprecated APIs. Walk through the migration:
+      1. Identify breaking changes (Props, ActorSystem creation, Cluster changes)
+      2. Update HOCON configuration for 1.5 format
+      3. Replace deprecated F# API usage (spawn, actorOf patterns)
+      4. Update Akka.DependencyInjection for new DI integration
+      5. Fix any actor serialization changes
+      6. Update unit tests for the new API
+
+      Show the before/after for each change and explain the migration reasoning.
+
+  - id: agentic_0014
+    instruction: |
+      Incident response: Analyze these Serilog structured logs from a production F# API
+      and diagnose the issue.
+
+      ```json
+      {"Timestamp":"2026-03-20T14:30:01Z","Level":"Information","Message":"Request started: POST /api/orders","CorrelationId":"abc-123"}
+      {"Timestamp":"2026-03-20T14:30:01Z","Level":"Information","Message":"Validating order","CorrelationId":"abc-123","UserId":"user-456"}
+      {"Timestamp":"2026-03-20T14:30:02Z","Level":"Warning","Message":"Database query slow: 1200ms","CorrelationId":"abc-123","Query":"SELECT * FROM products WHERE id IN (...)"}
+      {"Timestamp":"2026-03-20T14:30:03Z","Level":"Error","Message":"Connection pool exhausted","CorrelationId":"abc-123","PoolSize":25,"ActiveConnections":25}
+      {"Timestamp":"2026-03-20T14:30:03Z","Level":"Error","Message":"Request failed: POST /api/orders","CorrelationId":"abc-123","StatusCode":503,"Duration":2100}
+      {"Timestamp":"2026-03-20T14:30:04Z","Level":"Warning","Message":"Health check failed: database","Component":"PostgreSQL"}
+      ```
+
+      Diagnose the root cause, explain the cascade of failures, and provide:
+      1. Immediate fix (connection pool configuration)
+      2. Medium-term fix (query optimization, connection handling)
+      3. Long-term fix (circuit breaker, connection pooling strategy, monitoring alerts)
+
+  - id: agentic_0015
+    instruction: |
+      Security audit: Review this F# Giraffe API for OWASP Top 10 vulnerabilities.
+
+      ```fsharp
+      let searchHandler : HttpHandler =
+          fun next ctx -> task {
+              let query = ctx.GetQueryStringValue("q") |> Result.defaultValue ""
+              let! results = searchDatabase query
+              return! htmlString $"<h1>Results for {query}</h1><ul>{formatResults results}</ul>" next ctx
+          }
+
+      let uploadHandler : HttpHandler =
+          fun next ctx -> task {
+              let file = ctx.Request.Form.Files.[0]
+              let path = $"uploads/{file.FileName}"
+              use stream = System.IO.File.Create(path)
+              do! file.CopyToAsync(stream)
+              return! json {| path = path |} next ctx
+          }
+
+      let adminHandler : HttpHandler =
+          fun next ctx -> task {
+              let role = ctx.Request.Headers.["X-User-Role"].ToString()
+              if role = "admin" then
+                  return! json {| data = "secret admin data" |} next ctx
+              else
+                  return! RequestErrors.FORBIDDEN "Access denied" next ctx
+          }
+      ```
+
+      Identify ALL vulnerabilities (XSS, path traversal, broken auth, etc.),
+      explain each risk with OWASP reference, and provide the secure version.
+
+  - id: agentic_0016
+    instruction: |
+      Task: Perform a zero-downtime database schema migration for a production F# application.
+
+      Current schema: users table has a single "name" column (VARCHAR).
+      Target: Split "name" into "first_name" and "last_name" columns.
+
+      The application must remain available throughout the migration.
+      Plan the multi-phase migration:
+      1. Phase 1: Add new columns (backward compatible)
+      2. Phase 2: Backfill data from "name" to "first_name"/"last_name"
+      3. Phase 3: Update application code to use new columns (dual-write)
+      4. Phase 4: Stop writing to old column
+      5. Phase 5: Drop old column
+
+      Write the FluentMigrator migrations for each phase and the F# application
+      code changes. Show how to deploy each phase safely.

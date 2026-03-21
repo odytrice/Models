@@ -1,0 +1,329 @@
+# F# Libraries -- Teacher: DeepSeek V3.2
+# ~10-15% of total training data
+# Covers: Giraffe, FsToolkit.ErrorHandling, Akka.NET, Thoth.Json, linq2db, etc.
+
+teacher: deepseek
+domain: fsharp_libraries
+
+system_prompt: |
+  You are an expert F# developer specializing in the F# ecosystem.
+  Write idiomatic, production-quality F# code using the specified libraries.
+  Follow these conventions:
+  - Use pipeline operators (|>) for data transformations
+  - Prefer immutable data and functional patterns
+  - Use computation expressions where the library provides them
+  - Include necessary `open` statements at the top
+  - Include type annotations on public APIs
+  - Write concise explanations (2-3 sentences max) before the code
+  - All code must compile with .NET 9 and the latest stable versions of each library
+  Be concise. Return only the code and a brief explanation.
+
+temperature: 0.6
+max_tokens: 4096
+
+prompts:
+  # --- Giraffe Web Framework ---
+  - id: fsharp_lib_0001
+    instruction: |
+      Write a Giraffe HTTP handler that implements a basic CRUD API for a "Product" entity.
+      Include: GET /products, GET /products/{id}, POST /products, PUT /products/{id}, DELETE /products/{id}.
+      Use HttpHandler composition with the >=> operator, model binding with bindJsonAsync,
+      and return proper HTTP status codes. Include the route configuration and a Product record type.
+
+  - id: fsharp_lib_0002
+    instruction: |
+      Build a Giraffe application with JWT authentication:
+      1. A login endpoint that validates credentials and returns a JWT token
+      2. Protected endpoints using requiresAuthentication
+      3. Custom authorization handlers that check claims
+      4. Proper ASP.NET Core DI registration for the JWT configuration
+      Show the full Program.fs with middleware pipeline and DI setup.
+
+  - id: fsharp_lib_0003
+    instruction: |
+      Demonstrate Giraffe.ViewEngine for server-side HTML rendering:
+      1. A layout template function with head, nav, main content, and footer
+      2. A page that uses the layout and renders a list of items
+      3. A form with CSRF protection
+      4. Conditional rendering and list rendering using F# expressions
+      Show how to return HTML from a Giraffe HttpHandler using htmlView.
+
+  # --- FsToolkit.ErrorHandling ---
+  - id: fsharp_lib_0004
+    instruction: |
+      Demonstrate FsToolkit.ErrorHandling's `result { }` computation expression:
+      1. A user registration flow that validates username, email, and password
+      2. Each validation returns Result<ValidatedField, ValidationError>
+      3. Use `result { }` to compose them (short-circuit on first error)
+      4. Show the difference between result { } (short-circuit) and validation { } (accumulate errors)
+      Include the open statements and error type definitions.
+
+  - id: fsharp_lib_0005
+    instruction: |
+      Write an F# service layer using FsToolkit.ErrorHandling's `taskResult { }` CE:
+      1. A function that fetches a user from a database (returns Task<Result<User, AppError>>)
+      2. A function that validates the user's permissions
+      3. A function that performs an action if authorized
+      4. Compose all three into a single taskResult pipeline
+      Show how taskResult naturally handles both Task and Result without nested pattern matching.
+
+  - id: fsharp_lib_0006
+    instruction: |
+      Demonstrate FsToolkit.ErrorHandling's Option extensions:
+      1. option { } computation expression for chaining optional operations
+      2. Option.traverseResult to convert Option<Result<'T,'E>> to Result<Option<'T>,'E>
+      3. AsyncOption CE for async operations that may return None
+      Show a practical example: looking up a user, then their address, then their city -- where any step might return None.
+
+  # --- Akka.NET ---
+  - id: fsharp_lib_0007
+    instruction: |
+      Write an Akka.NET actor system in F# using Akka.FSharp:
+      1. Define message types as discriminated unions
+      2. Create an actor using `spawn` and `actorOf2`
+      3. Implement a parent-child actor hierarchy
+      4. Show message passing with <! and <? (ask pattern)
+      5. Implement a supervision strategy (OneForOne with Restart)
+      Include the actor system setup and a demonstration of the message flow.
+
+  - id: fsharp_lib_0008
+    instruction: |
+      Build an Akka.NET cluster in F# with:
+      1. Cluster configuration using HOCON
+      2. A seed node and two worker nodes
+      3. A cluster-aware router that distributes work
+      4. Cluster singleton for a coordinator actor
+      5. Handling MemberUp/MemberRemoved cluster events
+      Show the F# actor definitions and the HOCON configuration.
+
+  - id: fsharp_lib_0009
+    instruction: |
+      Demonstrate Akka.NET with ASP.NET Core DI in F#:
+      1. Register the ActorSystem in the DI container
+      2. Use Akka.DependencyInjection to create actors that receive services via DI
+      3. Inject an IActorRef into a Giraffe HttpHandler
+      4. Show the actor processing HTTP-triggered work asynchronously
+      Include the full DI registration in Program.fs.
+
+  # --- Thoth.Json.Net ---
+  - id: fsharp_lib_0010
+    instruction: |
+      Demonstrate Thoth.Json.Net for JSON serialization in F#:
+      1. Define Encoder and Decoder for a complex F# type (nested records with DUs and options)
+      2. Show manual encoder/decoder definitions (not auto)
+      3. Handle missing fields with optional decoders
+      4. Decode a JSON string and handle errors
+      5. Demonstrate Decode.andThen for conditional decoding based on a type field
+
+  - id: fsharp_lib_0011
+    instruction: |
+      Show how to use Thoth.Json.Giraffe to handle JSON in a Giraffe API:
+      1. Configure Giraffe to use Thoth.Json for serialization
+      2. Write request handlers that decode JSON bodies with custom decoders
+      3. Return JSON responses with custom encoders
+      4. Handle decode errors and return proper HTTP 400 responses with error details
+
+  # --- linq2db ---
+  - id: fsharp_lib_0012
+    instruction: |
+      Write F# data access code using linq2db:
+      1. Define table mappings using attributes on F# records
+      2. Write type-safe LINQ queries (select, where, join, group by)
+      3. Insert, update, and delete operations
+      4. Demonstrate bulk copy for batch inserts
+      5. Show how to use raw SQL when needed
+      Use PostgreSQL as the target database.
+
+  - id: fsharp_lib_0013
+    instruction: |
+      Build a repository pattern in F# with linq2db:
+      1. A generic IRepository<'T> interface
+      2. An F# implementation using linq2db's DataConnection
+      3. Query methods that return Result types for error handling
+      4. Transaction support with linq2db
+      Show the DI registration for ASP.NET Core.
+
+  # --- FluentMigrator ---
+  - id: fsharp_lib_0014
+    instruction: |
+      Write FluentMigrator database migrations in F#:
+      1. Create a Users table with columns (id, email, name, created_at)
+      2. Add an index on the email column
+      3. Create a second migration that adds a "role" column
+      4. Show a migration that adds a foreign key relationship
+      5. Configure the FluentMigrator runner for PostgreSQL in an ASP.NET Core app
+      Use the FluentMigrator F# API style.
+
+  # --- Serilog ---
+  - id: fsharp_lib_0015
+    instruction: |
+      Configure Serilog structured logging in an F# Giraffe application:
+      1. Set up Serilog with Console and File sinks
+      2. Add request logging middleware
+      3. Enrich logs with correlation IDs from HTTP headers
+      4. Create a custom F# logging helper that uses Serilog's structured logging
+      5. Show log output examples with structured properties
+      Demonstrate idiomatic F# usage (not C# style).
+
+  # --- Cross-Library Integration ---
+  - id: fsharp_lib_0016
+    instruction: |
+      Build a complete F# API endpoint that combines:
+      - Giraffe for HTTP handling
+      - FsToolkit.ErrorHandling taskResult CE for the service layer
+      - linq2db for data access
+      - Thoth.Json for JSON serialization
+      - Serilog for logging
+      The endpoint should: receive a JSON request, validate it, query the database,
+      transform the data, and return a JSON response. Show proper error handling at each layer.
+
+  - id: fsharp_lib_0017
+    instruction: |
+      Create an F# background job processing system using:
+      - Akka.NET actors for job processing
+      - FsToolkit.ErrorHandling for error handling in the actor
+      - Serilog for structured logging of job progress
+      - Confluent.Kafka for receiving job messages from a Kafka topic
+      Show the actor definition, Kafka consumer setup, and message flow.
+
+  - id: fsharp_lib_0018
+    instruction: |
+      Write an F# domain model for a multi-tenant SaaS application:
+      - DUs for tenant-scoped operations (making illegal cross-tenant access unrepresentable)
+      - Giraffe middleware that extracts tenant context from JWT claims
+      - linq2db queries that are automatically scoped to the current tenant
+      - FsToolkit.ErrorHandling for validation
+      Show the full flow from HTTP request to database query with tenant isolation.
+
+  # --- New seeds: Uncovered libraries ---
+  - id: fsharp_lib_0019
+    instruction: |
+      Configure FSharp.SystemTextJson for serializing F# types with System.Text.Json:
+      1. Set up JsonFSharpOptions for DU serialization (AdjacentTag, InternalTag, Untagged)
+      2. Handle Option types (serialize None as null, Some as value)
+      3. Configure record serialization with camelCase naming
+      4. Write a custom converter for a complex DU with heterogeneous cases
+      Show the Giraffe integration -- configure STJ as the default JSON serializer.
+
+  - id: fsharp_lib_0020
+    instruction: |
+      Demonstrate FSharp.SystemTextJson advanced patterns:
+      1. Skippable<'T> for distinguishing "missing field" from "null value" in JSON
+      2. Union encoding options and their JSON shapes
+      3. Combining with Giraffe's model binding for type-safe request parsing
+      4. Performance comparison with Thoth.Json.Net for F# type serialization
+
+  - id: fsharp_lib_0021
+    instruction: |
+      Write async data processing pipelines using FSharp.Control.AsyncSeq:
+      1. Read lines from a file as an async sequence
+      2. Transform each line (parse, validate, enrich) using AsyncSeq.mapAsync
+      3. Batch items using AsyncSeq.bufferByCountAndTime
+      4. Write batches to a database with AsyncSeq.iterAsync
+      5. Handle errors per-item without stopping the pipeline
+      Show the pipeline composition using |> and AsyncSeq module functions.
+
+  - id: fsharp_lib_0022
+    instruction: |
+      Combine FSharp.Control.AsyncSeq with Giraffe for streaming HTTP responses:
+      1. Generate an async sequence of Server-Sent Events from an Akka.NET actor
+      2. Stream the sequence as an SSE response from a Giraffe handler
+      3. Handle client disconnection (CancellationToken)
+      4. Implement back-pressure when the client can't consume fast enough
+
+  - id: fsharp_lib_0023
+    instruction: |
+      Demonstrate FSharp.Control.Reactive for event-driven programming in F#:
+      1. Create an Observable from UI events (button clicks, text input changes)
+      2. Use operators: throttle, debounce, distinctUntilChanged, combineLatest
+      3. Merge multiple event streams and process with scan (running state)
+      4. Error handling in reactive pipelines (retry, catch)
+      Show a practical example: auto-save that debounces user input and retries on failure.
+
+  - id: fsharp_lib_0024
+    instruction: |
+      Use FSharp.Data type providers in an F# web application:
+      1. JsonProvider to consume a third-party REST API with compile-time types
+      2. CsvProvider to process uploaded CSV files in a Giraffe handler
+      3. HtmlProvider to scrape and cache data from an external website
+      4. Combine with FsToolkit.ErrorHandling for safe parsing
+      Show error handling when external data doesn't match the expected schema.
+
+  - id: fsharp_lib_0025
+    instruction: |
+      Write F# unit tests using FsUnit.xUnit with idiomatic assertions:
+      1. Collection assertions: should contain, should haveLength, should be ascending
+      2. String assertions: should startWith, should match (regex)
+      3. Exception assertions: should throw with specific exception type
+      4. Custom assertions for domain types (Result should be Ok, Option should be Some)
+      5. Parameterized tests using xUnit [<Theory>] and [<InlineData>] from F#
+      Show a complete test module for a user validation service.
+
+  - id: fsharp_lib_0026
+    instruction: |
+      Use EntityFrameworkCore.FSharp for database access:
+      1. Define F# record entities with EF Core configuration
+      2. Configure the DbContext with F# options and DU-to-column converters
+      3. Write LINQ queries using F# query expressions
+      4. Handle migrations with EF Core from an F# project
+      Compare with linq2db -- when to prefer EF Core vs linq2db in F#.
+
+  - id: fsharp_lib_0027
+    instruction: |
+      Write direct PostgreSQL data access from F# using Npgsql:
+      1. Parameterized queries with NpgsqlCommand and NpgsqlParameter
+      2. Reading results with NpgsqlDataReader mapped to F# records
+      3. Batch operations using NpgsqlBatch
+      4. COPY for bulk data loading
+      5. Listen/Notify for PostgreSQL pub/sub from F#
+      Wrap all operations in Result types for error handling.
+
+  - id: fsharp_lib_0028
+    instruction: |
+      Build a Kafka producer and consumer in F# using Confluent.Kafka:
+      1. Producer: serialize F# DU messages to JSON, send to topic with partitioning
+      2. Consumer: deserialize messages, process with error handling, commit offsets
+      3. Handle serialization/deserialization errors gracefully
+      4. Implement exactly-once semantics with idempotent producer
+      5. Consumer group rebalancing and graceful shutdown
+      Show the ASP.NET Core DI registration and BackgroundService consumer.
+
+  - id: fsharp_lib_0029
+    instruction: |
+      Generate OpenAPI documentation from Giraffe handlers using Giraffe.OpenApi:
+      1. Annotate handlers with OpenAPI metadata (summary, description, response types)
+      2. Define request/response schemas from F# record types
+      3. Add authentication requirements to endpoints
+      4. Configure Swagger UI middleware
+      5. Generate typed API clients from the OpenAPI spec
+      Show the full setup from handler definition to browsable API docs.
+
+  - id: fsharp_lib_0030
+    instruction: |
+      Use Akka.Bootstrap.Docker with Akka.NET clusters in F#:
+      1. Configure Akka.Cluster for Docker/Kubernetes discovery
+      2. Use environment variables for cluster seed nodes
+      3. Handle container scaling (new pods joining the cluster)
+      4. Graceful shutdown when a container is terminated (SIGTERM)
+      5. Health check endpoint that reports cluster membership status
+      Show the HOCON configuration and Dockerfile.
+
+  - id: fsharp_lib_0031
+    instruction: |
+      Interact with MinIO (S3-compatible storage) from F# using the Minio SDK:
+      1. Create/list buckets, upload/download objects
+      2. Generate presigned URLs for direct client uploads
+      3. Set bucket policies for public read access
+      4. Stream large file uploads using multipart upload
+      5. Event notifications when objects are created/deleted
+      Wrap all operations in taskResult CE for error handling.
+
+  - id: fsharp_lib_0032
+    instruction: |
+      Implement Stripe payment processing from F# using Stripe.net:
+      1. Create a customer and attach a payment method
+      2. Create a subscription with a recurring price
+      3. Handle webhook events (payment_succeeded, payment_failed, subscription_cancelled)
+      4. Implement a Giraffe webhook handler with signature verification
+      5. Map Stripe events to F# domain events using pattern matching
+      Show the full flow from checkout to payment confirmation.

@@ -1,0 +1,192 @@
+# Docker / Kubernetes -- Teacher: MiniMax M2.7
+# ~8-10% of total training data
+# Covers: Dockerfiles, multi-stage builds, compose, K8s deployments, Helm
+
+teacher: minimax
+domain: docker_kubernetes
+
+system_prompt: |
+  You are an expert DevOps engineer specializing in Docker and Kubernetes.
+  Write production-grade configurations and scripts.
+  Follow these conventions:
+  - Use multi-stage Docker builds for .NET and Node.js applications
+  - Follow security best practices (non-root users, minimal base images, no secrets in layers)
+  - Use specific image tags (never :latest in production)
+  - Include health checks and resource limits in Kubernetes manifests
+  - Write concise explanations (2-3 sentences max) before the configuration
+  Be concise. Return only the code/config and a brief explanation.
+
+temperature: 0.4
+max_tokens: 4096
+
+prompts:
+  # --- Dockerfiles ---
+  - id: docker_0001
+    instruction: |
+      Write a multi-stage Dockerfile for an F# Giraffe web application:
+      1. Build stage: restore NuGet packages, build in Release mode
+      2. Publish stage: create a self-contained publish
+      3. Runtime stage: use the smallest possible base image (alpine)
+      4. Run as non-root user
+      5. Include proper .dockerignore
+      6. Optimize layer caching so NuGet restore is cached separately from code changes
+
+  - id: docker_0002
+    instruction: |
+      Write a multi-stage Dockerfile for a SvelteKit application:
+      1. Dependencies stage: install npm dependencies (cached layer)
+      2. Build stage: run `npm run build`
+      3. Runtime stage: use Node.js alpine, copy only the build output
+      4. Run as non-root user
+      5. Set proper environment variables for production
+      Show the .dockerignore and explain the layer caching strategy.
+
+  - id: docker_0003
+    instruction: |
+      Create a Docker Compose file for a full development environment:
+      - F# Giraffe API (with hot reload via dotnet watch)
+      - SvelteKit frontend (with HMR)
+      - PostgreSQL 16 with persistent volume
+      - Apache Kafka + Zookeeper
+      - MinIO (S3-compatible storage)
+      Include health checks, depends_on with conditions, named networks, and .env file usage.
+
+  - id: docker_0004
+    instruction: |
+      Debug and fix this Dockerfile that has performance and security issues:
+      ```dockerfile
+      FROM mcr.microsoft.com/dotnet/sdk:9.0
+      WORKDIR /app
+      COPY . .
+      RUN dotnet restore
+      RUN dotnet publish -c Release -o out
+      EXPOSE 5000
+      ENTRYPOINT ["dotnet", "out/MyApp.dll"]
+      ```
+      Explain each issue (layer caching, image size, security, non-root) and provide the corrected version.
+
+  # --- Kubernetes ---
+  - id: k8s_0001
+    instruction: |
+      Write Kubernetes manifests for deploying an F# Giraffe API:
+      1. Deployment with 3 replicas, rolling update strategy
+      2. Service (ClusterIP)
+      3. Ingress with TLS termination
+      4. ConfigMap for application settings
+      5. Secret for database connection string
+      6. HorizontalPodAutoscaler (CPU/memory based)
+      Include resource requests/limits, liveness/readiness probes, and proper labels.
+
+  - id: k8s_0002
+    instruction: |
+      Create Kubernetes manifests for a PostgreSQL StatefulSet:
+      1. StatefulSet with persistent volume claims
+      2. Headless Service for stable network identities
+      3. ConfigMap for postgresql.conf settings
+      4. Secret for the postgres password
+      5. Init container for data directory permissions
+      6. PodDisruptionBudget for high availability
+      Target a production setup with proper security context.
+
+  - id: k8s_0003
+    instruction: |
+      Write a Helm chart for deploying the full application stack:
+      1. Chart.yaml and values.yaml with sensible defaults
+      2. Templates for: API deployment, frontend deployment, PostgreSQL StatefulSet
+      3. Configurable replicas, image tags, and resource limits via values
+      4. Conditional Kafka deployment (enabled via values)
+      5. NOTES.txt with access instructions
+      Show the directory structure and key template files.
+
+  - id: k8s_0004
+    instruction: |
+      Diagnose and fix a Kubernetes deployment that is crash-looping:
+      The pod logs show: "Connection refused: localhost:5432"
+      The deployment uses environment variables for the database connection.
+      Walk through the debugging process:
+      1. kubectl describe pod
+      2. kubectl logs
+      3. Check service DNS resolution
+      4. Check ConfigMap/Secret values
+      5. Show the fix (the service name should be used instead of localhost)
+
+  # --- CI/CD & DevOps ---
+  - id: devops_0001
+    instruction: |
+      Write a GitHub Actions workflow for the F# + SvelteKit monorepo:
+      1. On push to main: build, test, and deploy both services
+      2. Build Docker images with proper tagging (git SHA + latest)
+      3. Push to GitHub Container Registry (ghcr.io)
+      4. Deploy to Kubernetes using kubectl set image
+      5. Run F# tests and Svelte tests in parallel jobs
+      6. Cache NuGet and npm dependencies across runs
+
+  - id: devops_0002
+    instruction: |
+      Create a Kubernetes monitoring setup:
+      1. Deploy Prometheus using a ServiceMonitor for the F# API
+      2. Add a /metrics endpoint to the Giraffe application
+      3. Create Grafana dashboards for: request rate, error rate, latency percentiles
+      4. Set up alerting rules for: high error rate, pod restarts, memory pressure
+      Show the Kubernetes manifests and the F# metrics endpoint code.
+
+  # --- New seeds: Uncovered topics ---
+  - id: docker_0005
+    instruction: |
+      Demonstrate Docker BuildKit advanced features for an F# application:
+      1. Cache mounts for NuGet package restore (--mount=type=cache)
+      2. Secret mounts for private NuGet feeds (--mount=type=secret)
+      3. Heredoc syntax for inline scripts in Dockerfiles
+      4. Multi-platform builds (linux/amd64 and linux/arm64) with docker buildx
+      5. Build arguments and target stages for dev vs prod builds
+      Show the complete Dockerfile with BuildKit features and the build commands.
+
+  - id: docker_0006
+    instruction: |
+      Implement container security scanning in a CI pipeline:
+      1. Scan Docker images with Trivy for OS and library vulnerabilities
+      2. Scan the Dockerfile with hadolint for best-practice violations
+      3. Generate SBOM (Software Bill of Materials) for the F# API image
+      4. Block deployment if critical/high vulnerabilities are found
+      5. Show a GitHub Actions step that runs all scans and fails on issues
+      Include example Trivy output and how to handle false positives.
+
+  - id: k8s_0005
+    instruction: |
+      Write Kubernetes NetworkPolicies for a microservice application:
+      1. Default deny all ingress/egress for the namespace
+      2. Allow the F# API to receive traffic only from the Ingress controller
+      3. Allow the API to connect only to PostgreSQL on port 5432
+      4. Allow the SvelteKit frontend to connect only to the API
+      5. Allow the API to make outbound HTTPS calls to external payment APIs
+      Explain each policy rule and test with kubectl to verify enforcement.
+
+  - id: k8s_0006
+    instruction: |
+      Configure Kubernetes RBAC for application workloads:
+      1. Create a ServiceAccount for the F# API deployment
+      2. Create a Role that allows reading ConfigMaps and Secrets in the app namespace
+      3. Create a ClusterRole for the monitoring stack to scrape metrics
+      4. Bind roles to service accounts with RoleBinding and ClusterRoleBinding
+      5. Configure pod security: run as non-root, drop capabilities, read-only filesystem
+      Show all manifests and explain the principle of least privilege.
+
+  - id: k8s_0007
+    instruction: |
+      Create Kubernetes CronJobs and Jobs for batch processing:
+      1. A CronJob that runs database cleanup every night at 2 AM
+      2. A Job that runs FluentMigrator database migrations (used before deployment)
+      3. A CronJob that generates and emails daily reports
+      4. Configure: backoff limits, active deadline, concurrency policy, history limits
+      5. Monitor job completion from a GitHub Actions deployment workflow
+      Show the manifests and the F# console application used by the jobs.
+
+  - id: k8s_0008
+    instruction: |
+      Use Kustomize as an alternative to Helm for managing Kubernetes environments:
+      1. Base manifests for the full application stack (API, frontend, PostgreSQL)
+      2. Dev overlay: single replica, debug logging, local image tags
+      3. Staging overlay: 2 replicas, staging domain, staging database URL
+      4. Production overlay: 3 replicas, HPA, production domain, production secrets
+      5. Show the directory structure, kustomization.yaml files, and patches
+      Compare the Kustomize approach with Helm and when to prefer each.

@@ -1,0 +1,255 @@
+# Svelte 5 / SvelteKit 2 / TypeScript -- Teacher: Kimi K2.5
+# ~25-30% of total training data (Svelte 15-20% + TypeScript 10%)
+# Covers: Runes, components, reactivity, SvelteKit routing, SSR, form actions
+
+teacher: kimi
+domain: svelte_typescript
+
+system_prompt: |
+  You are an expert Svelte 5 and TypeScript developer.
+  Write modern, production-quality code using Svelte 5 runes syntax ($state, $derived, $effect, $props).
+  Follow these conventions:
+  - Always use Svelte 5 runes (NOT Svelte 4 stores or reactive declarations)
+  - Use TypeScript for all script blocks (<script lang="ts">)
+  - Use SvelteKit 2 conventions for routing, load functions, and form actions
+  - Include proper TypeScript types and interfaces
+  - Write concise explanations (2-3 sentences max) before the code
+  - Show file paths as comments (e.g., // src/routes/+page.svelte)
+
+temperature: 0.7
+max_tokens: 6144
+
+prompts:
+  # --- Svelte 5 Runes ---
+  - id: svelte_0001
+    instruction: |
+      Write a Svelte 5 component that demonstrates all core runes:
+      1. $state for reactive state (a todo list)
+      2. $derived for computed values (completed count, remaining count)
+      3. $effect for side effects (saving to localStorage when todos change)
+      4. $props for component props with defaults
+      5. $bindable for two-way bindable props
+      Show the component and a parent component that uses it.
+
+  - id: svelte_0002
+    instruction: |
+      Create a Svelte 5 component with $state using class-based state:
+      Build a Counter class with increment, decrement, and reset methods where the count
+      is reactive via $state. Show how class instances work with Svelte 5 reactivity
+      and can be shared across components.
+
+  - id: svelte_0003
+    instruction: |
+      Demonstrate $effect.pre and $effect cleanup in Svelte 5:
+      1. A component that sets up a WebSocket connection in $effect and cleans up on destroy
+      2. A component that uses $effect.pre to run before DOM updates (e.g., scroll position)
+      3. Show proper dependency tracking -- explain what Svelte 5 tracks vs what it doesn't
+
+  # --- SvelteKit Routing & Loading ---
+  - id: svelte_0004
+    instruction: |
+      Build a SvelteKit 2 route structure for a blog with:
+      1. src/routes/+page.svelte (home with recent posts)
+      2. src/routes/blog/+page.svelte (post listing with pagination)
+      3. src/routes/blog/[slug]/+page.svelte (individual post)
+      4. src/routes/blog/[slug]/+page.server.ts (server load function fetching from an API)
+      5. src/routes/+layout.svelte (shared layout with navigation)
+      Show all files with TypeScript types for the data.
+
+  - id: svelte_0005
+    instruction: |
+      Implement SvelteKit 2 form actions for a user settings page:
+      1. A +page.server.ts with named actions: updateProfile, changePassword, deleteAccount
+      2. A +page.svelte with forms using the enhance directive
+      3. Server-side validation with proper error responses
+      4. Client-side progressive enhancement with loading states
+      5. Show the use of fail() for validation errors and redirect() for success
+
+  - id: svelte_0006
+    instruction: |
+      Create a SvelteKit 2 authentication system with:
+      1. A login page with form actions
+      2. A hooks.server.ts that validates session cookies
+      3. A protected layout that redirects unauthenticated users
+      4. Server load functions that include user data via locals
+      5. A logout action that clears the session
+      Use cookies (not JWT) and show all TypeScript types.
+
+  # --- Svelte 5 Components & Patterns ---
+  - id: svelte_0007
+    instruction: |
+      Build a reusable data table component in Svelte 5 with:
+      1. Generic typed columns (using TypeScript generics with $props)
+      2. Sorting by clicking column headers ($state for sort state)
+      3. Filtering/search with $derived
+      4. Pagination with $state
+      5. Row selection with checkbox column
+      Show both the component and example usage with a User type.
+
+  - id: svelte_0008
+    instruction: |
+      Create a Svelte 5 modal/dialog system:
+      1. A Modal component using the HTML <dialog> element
+      2. $state for open/close state, $effect for focus trapping
+      3. A snippet-based content slot (Svelte 5 snippets, not old slots)
+      4. A ConfirmDialog variant that resolves a Promise on accept/cancel
+      5. A global modal manager using module-level $state
+
+  - id: svelte_0009
+    instruction: |
+      Demonstrate Svelte 5 snippets (the replacement for slots):
+      1. A Card component that accepts header, body, and footer snippets
+      2. A List component that accepts an item snippet with typed parameters
+      3. Show how to pass snippets from parent to child
+      4. Default snippet content when none is provided
+      Compare with the old Svelte 4 slot syntax to show what changed.
+
+  # --- TypeScript Patterns ---
+  - id: svelte_ts_0001
+    instruction: |
+      Write TypeScript utility types and functions for a SvelteKit application:
+      1. A branded type pattern for IDs (UserId, PostId that are strings but not interchangeable)
+      2. A Result type with map, flatMap, and match methods
+      3. An API client with typed request/response using generics
+      4. Discriminated union types for API responses (Success | Error | Loading)
+      Show practical usage in a SvelteKit load function.
+
+  - id: svelte_ts_0002
+    instruction: |
+      Create a TypeScript-first form validation library for SvelteKit:
+      1. Schema definition using a builder pattern (similar to Zod but simplified)
+      2. Type inference from schemas (infer the TypeScript type from the schema)
+      3. Integration with SvelteKit form actions
+      4. Client-side validation in a Svelte 5 component using $state and $derived
+      Show the full flow from schema definition to form rendering to server validation.
+
+  - id: svelte_ts_0003
+    instruction: |
+      Write a TypeScript API client for a SvelteKit app that communicates with an F# Giraffe backend:
+      1. Type-safe API routes using string literal types
+      2. Request/response types that mirror the F# backend types
+      3. Automatic error handling and retry logic
+      4. Integration with SvelteKit's fetch (for SSR support)
+      5. Loading state management using Svelte 5 $state
+      This is a cross-stack example connecting Svelte frontend to F# backend.
+
+  # --- SvelteKit Advanced ---
+  - id: svelte_0010
+    instruction: |
+      Implement SvelteKit 2 streaming with server load functions:
+      1. A dashboard page that loads multiple data sources
+      2. Use promise streaming to show data as it arrives (deferred loading)
+      3. Show the Svelte 5 {#await} block syntax
+      4. Loading skeletons while data streams in
+      5. Error boundaries for individual data streams
+
+  - id: svelte_0011
+    instruction: |
+      Build a SvelteKit 2 real-time feature using Server-Sent Events:
+      1. A +server.ts endpoint that streams SSE data
+      2. A Svelte 5 component that connects to the SSE endpoint
+      3. $state for the incoming messages
+      4. Automatic reconnection on disconnect
+      5. Show a live notification feed as the practical example
+
+  - id: svelte_0012
+    instruction: |
+      Create a SvelteKit 2 internationalization (i18n) system:
+      1. A translations module with TypeScript type safety
+      2. A SvelteKit hook that detects locale from Accept-Language header
+      3. Route-based locale (e.g., /en/about, /fr/about)
+      4. A Svelte 5 component that provides translated strings via $derived
+      5. Pluralization and interpolation support
+
+  # --- New seeds: Uncovered Svelte topics ---
+  - id: svelte_0013
+    instruction: |
+      Demonstrate the $inspect rune in Svelte 5 for debugging reactive state:
+      1. Basic $inspect() usage to log state changes with stack traces
+      2. $inspect().with() for custom logging callbacks
+      3. $inspect.trace() inside an $effect to trace which dependencies caused re-runs
+      4. Show how $inspect is stripped in production builds
+      Create a practical debugging example: a shopping cart where items and totals
+      change and $inspect helps trace unexpected updates.
+
+  - id: svelte_0014
+    instruction: |
+      Implement SvelteKit 2 client-side error handling with hooks.client.ts:
+      1. Create src/hooks.client.ts with handleError that reports errors to an API
+      2. Create custom +error.svelte pages at both root and nested route levels
+      3. Use the $page.error store with typed error data
+      4. Show the difference between expected errors (from throw error()) and unexpected errors
+      5. Implement a global error boundary component using <svelte:boundary>
+      Include TypeScript types for the custom error shape.
+
+  - id: svelte_0015
+    instruction: |
+      Build Svelte 5 transitions and animations using the new runes approach:
+      1. Entrance/exit transitions using transition: directive with built-in transitions
+      2. Custom transition function that creates a typewriter effect
+      3. Animate elements in an {#each} block using animate:flip
+      4. Coordinate transitions with $state changes (e.g., tab switching with crossfade)
+      5. Deferred transitions between components using crossfade with key
+      Show how transitions interact with Svelte 5 reactivity ($state, $derived).
+
+  - id: svelte_0016
+    instruction: |
+      Write tests for Svelte 5 components using Vitest and @testing-library/svelte:
+      1. Test a component with $state -- verify reactive updates
+      2. Test a component with $props -- verify prop binding
+      3. Test form submission with SvelteKit form actions (mock the action)
+      4. Test async behavior ($effect with fetch, loading states)
+      5. Snapshot testing for a complex component
+      Show the vitest.config.ts setup for SvelteKit and common testing patterns.
+
+  # --- New seeds: TypeScript expansion ---
+  - id: svelte_ts_0004
+    instruction: |
+      Demonstrate advanced TypeScript generics in a SvelteKit application:
+      1. Conditional types: extract the response type from an API route handler
+      2. Mapped types: create a Readonly, Optional, and Validated version of form types
+      3. Template literal types: type-safe route paths like `/users/${UserId}/posts/${PostId}`
+      4. Recursive types: deeply nested object path accessor (e.g., "user.address.city")
+      5. Distributive conditional types for union type transformations
+      Show each pattern solving a real problem in a SvelteKit codebase.
+
+  - id: svelte_ts_0005
+    instruction: |
+      Build form validation with Zod integrated into SvelteKit:
+      1. Define Zod schemas for registration, login, and profile update forms
+      2. Infer TypeScript types from Zod schemas (z.infer<typeof schema>)
+      3. Server-side validation in SvelteKit form actions using schema.safeParse()
+      4. Client-side validation in Svelte 5 components using $state and $derived
+      5. Display validation errors per-field with proper TypeScript types
+      6. Reuse the same schema for both client and server validation
+      Show the complete flow from schema definition to error display.
+
+  - id: svelte_ts_0006
+    instruction: |
+      Demonstrate TypeScript type narrowing and type guards in practice:
+      1. Custom type guard functions (isUser, isAdmin) for API response types
+      2. Discriminated union types with exhaustive switch (never type check)
+      3. Assertion functions (asserts value is User)
+      4. Narrowing with in operator for optional properties
+      5. Branded types (UserId, PostId) with type guard validation
+      Show each pattern used in SvelteKit load functions and Svelte 5 components.
+
+  - id: svelte_ts_0007
+    instruction: |
+      Write TypeScript utility patterns for a SvelteKit application:
+      1. Pick, Omit, Partial, Required, Record in practical API response types
+      2. Extract and Exclude for union type manipulation
+      3. Readonly and DeepReadonly for immutable state management
+      4. ReturnType and Parameters for typing function references
+      5. Satisfies operator for type-safe configuration objects
+      Show each utility type solving a concrete problem in a real SvelteKit app.
+
+  - id: svelte_ts_0008
+    instruction: |
+      Set up a TypeScript-first SvelteKit project with proper module architecture:
+      1. Path aliases ($lib, $components, $api, $types) in svelte.config.js and tsconfig
+      2. Barrel exports (index.ts) for organizing components and utilities
+      3. Type-only imports and exports (import type) for clean module boundaries
+      4. Ambient type declarations for environment variables (app.d.ts)
+      5. Strict TypeScript configuration (noUncheckedIndexedAccess, exactOptionalPropertyTypes)
+      Show the complete configuration and a well-organized src/lib structure.

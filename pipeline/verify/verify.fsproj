@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- ASP.NET Core framework reference (needed for Giraffe) -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+
+    <!-- F#-Specific Libraries (Critical) -->
+    <PackageReference Include="FsToolkit.ErrorHandling" Version="4.*" />
+    <PackageReference Include="FsToolkit.ErrorHandling.TaskResult" Version="4.*" />
+    <PackageReference Include="Akka" Version="1.*" />
+    <PackageReference Include="Akka.FSharp" Version="1.*" />
+    <PackageReference Include="Akka.Cluster" Version="1.*" />
+    <PackageReference Include="Akka.DependencyInjection" Version="1.*" />
+    <PackageReference Include="Giraffe" Version="7.*" />
+
+    <!-- F#-Specific Libraries (High) -->
+    <PackageReference Include="Thoth.Json.Net" Version="12.*" />
+    <PackageReference Include="Thoth.Json.Giraffe" Version="6.*" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="1.*" />
+    <PackageReference Include="FSharp.Control.AsyncSeq" Version="3.*" />
+    <PackageReference Include="linq2db" Version="6.*" />
+    <PackageReference Include="linq2db.PostgreSQL" Version="6.*" />
+
+    <!-- F#-Specific Libraries (Medium) -->
+    <PackageReference Include="FSharp.Data" Version="6.*" />
+    <PackageReference Include="EntityFrameworkCore.FSharp" Version="6.*" />
+    <PackageReference Include="FsUnit.xUnit" Version="6.*" />
+
+    <!-- Resolve System.Reactive version conflict (Minio needs >=6, FSharp.Control.Reactive needs <6) -->
+    <!-- Use FSharp.Control.Reactive without Minio's System.Reactive conflict -->
+    <PackageReference Include="System.Reactive" Version="6.*" />
+    <PackageReference Include="FSharp.Control.Reactive" Version="5.*" />
+
+    <!-- .NET / Infrastructure Libraries (High) -->
+    <PackageReference Include="FluentMigrator" Version="6.*" />
+    <PackageReference Include="FluentMigrator.Runner" Version="6.*" />
+    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.*" />
+    <PackageReference Include="Npgsql" Version="9.*" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.*" />
+    <PackageReference Include="Serilog" Version="4.*" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.*" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.*" />
+    <PackageReference Include="Confluent.Kafka" Version="2.*" />
+
+    <!-- .NET / Infrastructure Libraries (Medium) -->
+    <PackageReference Include="Minio" Version="6.*" />
+    <PackageReference Include="Stripe.net" Version="47.*" />
+    <PackageReference Include="Ulid" Version="1.*" />
+    <PackageReference Include="CsvHelper" Version="33.*" />
+  </ItemGroup>
+</Project>

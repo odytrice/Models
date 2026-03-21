@@ -1,0 +1,2273 @@
+teacher: kimi
+domain: long_context
+system_prompt: 'You are a senior full-stack developer writing comprehensive, production-quality code.
+
+  Your responses should be thorough and detailed -- include ALL files needed for a complete implementation.
+
+  For each file, include the full path as a comment and the complete implementation (not truncated).
+
+  Use this stack:
+
+  - Backend: F# with Giraffe, FsToolkit.ErrorHandling, ASP.NET Core
+
+  - Frontend: Svelte 5 with runes, SvelteKit 2, TypeScript
+
+  - Data: PostgreSQL, linq2db or Npgsql
+
+  - Infrastructure: Docker, docker-compose
+
+  Include: type definitions, error handling, validation, logging, and configuration.
+
+  Do NOT abbreviate or use "..." -- write the complete code for every file.
+
+  '
+temperature: 0.7
+max_tokens: 16384
+prompts:
+- id: long_0001_exp_000
+  instruction: 'Build a complete F# Giraffe REST API for an e-commerce order management system handling inventory allocation
+    and payment processing.
+
+    Include: Domain types (Order, OrderLine, Payment, Inventory DUs with units of measure), Data access with linq2db implementing
+    optimistic concurrency for inventory updates, Service layer with saga pattern for distributed transactions using FsToolkit.ErrorHandling
+    taskResult CEs, HTTP handlers with idempotency key middleware, JWT authentication with role-based access (Customer, Admin,
+    Warehouse), Route configuration with API versioning (/v1/orders), Program.fs with Polly retry policies and custom Serilog
+    enrichment, FluentMigrator migrations with foreign key constraints and indexes on OrderStatus, appsettings.json with connection
+    string vault integration, Dockerfile with Alpine Linux base and health checks. Include specific handling for out-of-stock
+    scenarios and partial fulfillment logic.'
+- id: long_0001_exp_001
+  instruction: 'Design a HIPAA-compliant healthcare patient records API using F# Giraffe with audit logging and field-level
+    encryption.
+
+    Include: Domain types (Patient, MedicalRecord, Encounter with PHI markers), Data access implementing repository pattern
+    with encrypted columns using AEAD, Service layer with Result-based validation for medical codes (ICD-10, CPT), HTTP handlers
+    with content-security headers and CORS restrictions, Authentication middleware integrating with Azure AD B2C, Route configuration
+    with patient consent filtering middleware, Program.fs with request/response encryption middleware, FluentMigrator with
+    audit trigger setup, appsettings.json with certificate-based encryption keys, Dockerfile with non-root user and read-only
+    filesystem. Ensure all endpoints implement the Safe Redirection pattern and include middleware for logging access to sensitive
+    records.'
+- id: long_0001_exp_002
+  instruction: 'Refactor an existing poorly-structured F# Giraffe monolithic web application into a clean architecture with
+    proper separation of concerns.
+
+    The current codebase has HttpHandlers directly calling database contexts with inline SQL. Transform this into: Domain
+    layer with pure functions (PaymentCalculation, DiscountEngine), Infrastructure layer with linq2db repositories implementing
+    unit of work pattern, Application layer with MediatR-style handlers using FsToolkit.ErrorHandling for validation pipelines,
+    Web layer with thin Giraffe handlers only doing HTTP concern mapping. Add middleware for global exception handling using
+    Giraffe''s error handler combinators, implement response caching for product catalog endpoints, and configure structured
+    logging with correlation IDs across async boundaries. Include before/after comparison of the HttpHandler composition patterns.'
+- id: long_0001_exp_003
+  instruction: 'Debug and fix a production F# Giraffe API experiencing memory leaks under high concurrent load during file
+    upload processing.
+
+    The application crashes with OutOfMemoryException when handling 100+ concurrent 50MB file uploads. Analyze the streaming
+    implementation: current code loads entire files into byte arrays. Provide corrected implementation using Giraffe''s streaming
+    APIs with proper HttpContext.Request.Body pipelining, implement backpressure handling with Channel<T> for async processing
+    queues, add memory pooling with ArrayPool<byte>, configure Kestrel limits in Program.fs (MaxRequestBodySize, MultipartBodyLengthLimit),
+    and implement request limitation middleware with cancellation token propagation. Include performance benchmarks comparing
+    memory usage before and after fixes.'
+- id: long_0001_exp_004
+  instruction: 'Implement a real-time IoT telemetry ingestion API using F# Giraffe with WebSocket support and time-series
+    data handling.
+
+    Include: Domain types (Device, TelemetryReading with discriminated unions for sensor types), Data access optimized for
+    high-write throughput with linq2db bulk inserts and table-valued parameters, Service layer with sliding window aggregation
+    for anomaly detection using FsToolkit.ErrorHandling, HTTP handlers for device registration and telemetry ingestion, Giraffe
+    WebSocket handlers for real-time dashboard updates, Authentication using X.509 certificate validation for devices, Rate
+    limiting middleware using AspNetCoreRateLimit with custom policies per device tier, Program.fs with Kestrel configured
+    for HTTP/2 and Unix socket binding, FluentMigrator with hypertable creation for TimescaleDB, appsettings.json with connection
+    pooling tuned for 1000+ concurrent connections, Dockerfile with multi-stage build including native dependencies for compression.'
+- id: long_0001_exp_005
+  instruction: 'Create a content moderation API for a social media platform using F# Giraffe with async media processing pipelines.
+
+    Include: Domain types (ContentItem, ModerationStatus, Report DUs), Data access with linq2db storing file metadata separately
+    from blob storage (Azure Blob), Service layer with TaskResult CEs chaining virus scanning, image recognition, and text
+    analysis services, HTTP handlers supporting multipart/form-data with streaming file uploads using IFormFile abstraction,
+    Background service integration using IHostedService for async processing queues, Authentication with OAuth2 introspection
+    endpoint validation, Route configuration with content negotiation (JSON vs MessagePack), Program.fs with custom Giraffe
+    middleware for request timing metrics, FluentMigrator with JSONB columns for flexible metadata, appsettings.json with
+    Azure Storage SAS token configuration, Dockerfile with ImageMagick and FFmpeg for media processing. Handle edge cases
+    like zero-byte files and unsupported codecs.'
+- id: long_0001_exp_006
+  instruction: 'Design a microservices API gateway using F# Giraffe with YARP (Yet Another Reverse Proxy) integration for
+    a fintech payment ecosystem.
+
+    Focus on: HttpHandler composition for routing to downstream services (PaymentService, FraudService, NotificationService),
+    Circuit breaker pattern implementation using Polly wrapped in custom HttpHandlers, Request aggregation pattern combining
+    responses from multiple services, Authentication middleware validating JWTs and forwarding claims headers, Rate limiting
+    with Redis backplane for distributed counting, Correlation ID propagation across service boundaries using HttpClientFactory
+    with custom delegating handlers, Response caching with cache invalidation webhooks, Program.fs with detailed OpenTelemetry
+    configuration for distributed tracing, Dockerfile with distroless base image. Include specific handling for idempotent
+    payment requests and webhook signature verification.'
+- id: long_0001_exp_007
+  instruction: 'Build a restaurant reservation system API using F# Giraffe with concurrent booking prevention and table optimization
+    algorithms.
+
+    Include: Domain types (Reservation, Table, TimeSlot with overlapping logic), Data access with linq2db using serializable
+    isolation levels for booking transactions, Service layer implementing table assignment algorithm with Result types for
+    overbooking prevention, HTTP handlers with If-Match/ETag headers for optimistic concurrency, Authentication with SMS-based
+    2FA for reservation confirmation, Route configuration with Giraffe TokenRouter for performance, Program.fs with custom
+    middleware for request coalescing (collapsing identical simultaneous requests), FluentMigrator with spatial data types
+    for table layout coordinates, appsettings.json with Twilio integration settings, Dockerfile with health check endpoint.
+    Include handling for no-show predictions and waitlist management with SignalR notifications.'
+- id: long_0001_exp_008
+  instruction: 'Implement a logistics shipment tracking API using F# Giraffe with geospatial queries and route optimization.
+
+    Include: Domain types (Shipment, Location, GeoCoordinate, DeliveryStatus), Data access with linq2db using NetTopologySuite
+    for PostGIS spatial queries (ST_DWithin, ST_LineLocatePoint), Service layer with TaskResult for delivery time estimation
+    using external traffic APIs, HTTP handlers supporting GeoJSON responses and conditional requests with If-Modified-Since,
+    Authentication with API key middleware scoped to carrier partners, Route configuration with Giraffe Endpoint Routing for
+    better performance, Program.fs with response compression for large GeoJSON payloads, FluentMigrator with spatial index
+    creation (GIST), appsettings.json with Google Maps API key management, Dockerfile with native libgeos dependencies. Include
+    real-time tracking simulation using Server-Sent Events (SSE).'
+- id: long_0001_exp_009
+  instruction: 'Create a video streaming content delivery API using F# Giraffe with HTTP range request support and adaptive
+    bitrate handling.
+
+    Include: Domain types (VideoAsset, EncodingProfile, StreamingManifest), Data access with linq2db for metadata only (file
+    paths, durations), Service layer with Result types for encoding validation and DRM license generation, HTTP handlers implementing
+    Giraffe''s streaming with FileExtensionContentTypeProvider and Accept-Ranges headers, Authentication with custom middleware
+    validating DRM tokens, Route configuration with content negotiation for HLS vs DASH manifests, Program.fs with Kestrel
+    configured for high throughput (ThreadPool tuning, HTTP.sys on Windows), FluentMigrator with partitioning for large event
+    tables, appsettings.json with Azure CDN integration endpoints, Dockerfile with nginx sidecar for caching. Include edge
+    case handling for partial content requests and bandwidth throttling.'
+- id: long_0001_exp_010
+  instruction: 'Add comprehensive OpenAPI/Swagger documentation to an existing undocumented F# Giraffe API using Giraffe.GoodRead
+    and Swashbuckle.
+
+    The existing API has 50+ endpoints with no documentation. Provide: XML documentation integration for F# types, Custom
+    SchemaFilter handling F# option types and discriminated unions, OperationFilter for adding security requirements and correlation
+    ID headers, SwaggerUI with OAuth2 PKCE flow integration, ReDoc alternative documentation, NSwag code generation setup
+    for TypeScript clients, Validation problem details formatting using FsToolkit.ErrorHandling Result mappings, Example providers
+    for complex request/response models, Route constraint documentation for custom Giraffe route matching. Include middleware
+    ordering fixes required for Swagger UI to work with Giraffe''s routing.'
+- id: long_0001_exp_011
+  instruction: 'Implement a banking account transfer API using F# Giraffe with strong consistency guarantees and audit trails.
+
+    Include: Domain types (Account, Transaction, Money with currency units), Data access with linq2db implementing Unit of
+    Work pattern with explicit transaction boundaries, Service layer with Saga pattern for cross-bank transfers using TaskResult
+    CEs, HTTP handlers with idempotency keys stored in Redis, Authentication with OAuth2 and mTLS for service-to-service calls,
+    Route configuration with API versioning and deprecation headers, Program.fs with custom Giraffe error handler returning
+    ProblemDetails (RFC 7807), FluentMigrator with triggers for audit table population, appsettings.json with HSM (Hardware
+    Security Module) configuration, Dockerfile with security scanning. Include handling for insufficient funds with compensating
+    transactions and daily limit enforcement.'
+- id: long_0001_exp_012
+  instruction: 'Build an education student enrollment API using F# Giraffe with complex validation rules and waitlist management.
+
+    Include: Domain types (Student, Course, Enrollment, Prerequisite), Data access with linq2db handling many-to-many relationships
+    with junction tables, Service layer with Result-based validation for prerequisite chains and GPA requirements, HTTP handlers
+    with model binding for complex nested JSON, Authentication with SAML2 integration for university SSO, Route configuration
+    with constraint-based routing (course codes with regex), Program.fs with localization middleware supporting multiple languages,
+    FluentMigrator with seed data for academic terms, appsettings.json with SendGrid configuration for enrollment confirmations,
+    Dockerfile with health checks. Include concurrent enrollment handling preventing race conditions in popular courses.'
+- id: long_0001_exp_013
+  instruction: 'Design a real estate property listing API using F# Giraffe with image optimization and CDN integration.
+
+    Include: Domain types (Property, Listing, ImageMetadata, GeoLocation), Data access with linq2db for relational data and
+    Azure Blob for images, Service layer with TaskResult for image processing pipelines (resize, watermark, WebP conversion),
+    HTTP handlers with Giraffe''s warbler pattern for lazy image processing, Authentication with JWT and refresh token rotation,
+    Route configuration with attribute routing for SEO-friendly URLs, Program.fs with response caching and output caching
+    middleware, FluentMigrator with full-text search indexes for property descriptions, appsettings.json with ImageSharp configuration,
+    Dockerfile with libgdiplus for Linux image processing. Include handling for image upload storms during batch imports.'
+- id: long_0001_exp_014
+  instruction: 'Create a gaming leaderboard API using F# Giraffe with Redis caching and anti-cheat validation.
+
+    Include: Domain types (Player, ScoreEntry, Leaderboard, AntiCheatReport), Data access with linq2db for persistence and
+    StackExchange.Redis for sorted sets, Service layer with Result types for score validation algorithms (statistical anomaly
+    detection), HTTP handlers with rate limiting using AspNetCoreRateLimit (10 requests/minute per player), Authentication
+    with Steam/OpenID integration, Route configuration with Giraffe''s choose combinator for game mode variants, Program.fs
+    with background service for periodic leaderboard snapshots, FluentMigrator with partitioning for high-volume score tables,
+    appsettings.json with Redis Sentinel configuration, Dockerfile with network optimization. Include handling for timestamp
+    manipulation attempts and replay attack prevention.'
+- id: long_0001_exp_015
+  instruction: 'Refactor synchronous database calls to async in an existing F# Giraffe HR onboarding system to improve throughput.
+
+    Current code uses linq2db synchronous methods blocking the thread pool. Provide: Async/Task conversion of repository methods
+    using F# async workflows, Service layer refactoring to use FsToolkit.ErrorHandling taskResult instead of Result (blocking),
+    HttpHandler updates to propagate CancellationToken through the pipeline, Database connection pooling optimization in appsettings.json,
+    Program.fs with async middleware configuration, BenchmarkDotNet comparison showing request latency before/after, Handling
+    of async exceptions in Giraffe''s error handling middleware, Circuit breaker implementation for external HR system APIs.
+    Include specific patterns for transaction scope async flow.'
+- id: long_0001_exp_016
+  instruction: 'Implement a legal case management API using F# Giraffe with document versioning and workflow state machines.
+
+    Include: Domain types (Case, Document, Version, WorkflowState with state machine rules), Data access with linq2db implementing
+    soft deletes and temporal tables, Service layer with Result types for workflow transitions (validating state changes),
+    HTTP handlers with content negotiation for PDF generation (using DinkToPdf), Authentication with Azure AD and claims-based
+    authorization for case access, Route configuration with Giraffe combinators for conditional workflows, Program.fs with
+    custom middleware for audit logging all case views, FluentMigrator with row-level security policies setup, appsettings.json
+    with Azure Key Vault for client secrets, Dockerfile with wkhtmltopdf dependencies. Include handling for document checkout
+    conflicts and merge resolution.'
+- id: long_0001_exp_017
+  instruction: 'Build a manufacturing quality control API using F# Giraffe with IoT sensor data ingestion and SPC (Statistical
+    Process Control).
+
+    Include: Domain types (Batch, Measurement, ControlLimit, Defect), Data access with linq2db bulk insert for high-frequency
+    sensor readings, Service layer with TaskResult for real-time capability index calculations (Cpk), HTTP handlers with Giraffe
+    streaming for large CSV uploads of historical data, Authentication with X.509 certificates for shop floor devices, Route
+    configuration with API key middleware for MES (Manufacturing Execution System) integration, Program.fs with custom health
+    checks for database and MQTT broker connectivity, FluentMigrator with time-series optimizations, appsettings.json with
+    MQTTnet configuration, Dockerfile with industrial protocol libraries. Include handling for sensor calibration drift and
+    out-of-control process alerts.'
+- id: long_0001_exp_018
+  instruction: 'Create a subscription billing API using F# Giraffe with proration calculations and payment gateway webhooks.
+
+    Include: Domain types (Subscription, Invoice, ProrationCalculation, PaymentMethod), Data access with linq2db handling
+    complex billing period calculations, Service layer with Result types for proration math and tax calculation (Avalara integration),
+    HTTP handlers with idempotent webhook processing for Stripe/PayPal events, Authentication with HMAC signature validation
+    for webhooks, Route configuration with versioning for billing API changes, Program.fs with hosted service for billing
+    cycle cron jobs, FluentMigrator with idempotent migration scripts for zero-downtime deployments, appsettings.json with
+    payment provider sandbox configurations, Dockerfile with timezone configuration for global billing. Include handling for
+    failed payment retry logic with exponential backoff.'
+- id: long_0001_exp_019
+  instruction: 'Design a multi-tenant SaaS API using F# Giraffe with database-per-tenant isolation and cross-tenant analytics.
+
+    Include: Domain types (Tenant, User, TenantScopedEntity with discriminated paths), Data access with linq2db using connection
+    string resolution based on JWT tenant claim, Service layer with TaskResult for tenant isolation validation (preventing
+    cross-tenant data leaks), HTTP handlers with middleware extracting tenant from subdomain or header, Authentication with
+    multi-tenant JWT validation (different issuers per tenant), Route configuration with tenant-specific route prefixes, Program.fs
+    with DbContext pooling per tenant and memory cache isolation, FluentMigrator with tenant database provisioning automation,
+    appsettings.json with tenant registry configuration, Dockerfile with resource constraints. Include handling for tenant
+    provisioning and deprovisioning workflows with data retention policies.'
+- id: long_0001_exp_020
+  instruction: 'Implement a background job processing API using F# Giraffe with Hangfire integration and job scheduling.
+
+    Include: Domain types (JobDefinition, JobStatus, RecurringSchedule), Data access with linq2db for job state persistence,
+    Service layer with Result types for job validation and retry policies, HTTP handlers for job enqueueing and monitoring
+    dashboard, Authentication with admin-only access to job controls, Route configuration with Giraffe handlers for RESTful
+    job management, Program.fs with Hangfire server configuration using F# job filters, FluentMigrator with Hangfire schema
+    setup, appsettings.json with Hangfire dashboard authorization, Dockerfile with separate job processing worker instances.
+    Include handling for job cancellation tokens and progress reporting through SignalR.'
+- id: long_0001_exp_021
+  instruction: 'Debug authentication failures in a F# Giraffe API using JWT bearer tokens where claims are not propagating
+    to HttpContext.User.
+
+    The API returns 401 for authenticated requests. Analyze: TokenValidationParameters configuration in Program.fs, Custom
+    AuthenticationHandler implementation, Claims transformation middleware ordering, Giraffe''s auth combinators (requiresAuthentication,
+    authorizeByPolicy) usage, Clock skew issues with JWT exp/nbf claims, Authority/MetadataAddress configuration for OIDC
+    discovery, Role claim mapping from JWT to ClaimsPrincipal. Provide corrected implementation with proper middleware ordering
+    (Authentication before Authorization before Giraffe), Custom IClaimsTransformation for role normalization, and test cases
+    using Microsoft.AspNetCore.TestHost.'
+- id: long_0001_exp_022
+  instruction: 'Build a cryptocurrency wallet API using F# Giraffe with cold storage simulation and transaction signing.
+
+    Include: Domain types (Wallet, Transaction, UTXO, BlockchainNetwork), Data access with linq2db for wallet metadata (no
+    private keys in DB), Service layer with Result types for transaction building and fee estimation, HTTP handlers with HSM
+    (Hardware Security Module) integration simulation, Authentication with multi-signature requirements for large transfers,
+    Route configuration with Giraffe handlers for blockchain webhooks, Program.fs with custom middleware for request signing
+    verification, FluentMigrator with encrypted columns for address derivation paths, appsettings.json with blockchain node
+    RPC endpoints, Dockerfile with security hardening (no shell, read-only). Include handling for double-spend detection and
+    mempool monitoring.'
+- id: long_0001_exp_023
+  instruction: 'Create a chat message history API using F# Giraffe with pagination, search, and real-time synchronization.
+
+    Include: Domain types (Message, Thread, Attachment, SearchIndex), Data access with linq2db implementing keyset pagination
+    (cursor-based) for performance, Service layer with TaskResult for message content moderation and indexing, HTTP handlers
+    with OData-style query parameters for filtering, Authentication with SignalR hub integration for real-time updates, Route
+    configuration with Giraffe''s routef for typed parameters, Program.fs with response compression and caching for historical
+    data, FluentMigrator with full-text search configuration (PostgreSQL tsvector), appsettings.json with ElasticSearch connection
+    for advanced search, Dockerfile with Meilisearch sidecar. Include handling for message editing history and soft delete
+    recovery.'
+- id: long_0001_exp_024
+  instruction: 'Implement a sports tournament bracket API using F# Giraffe with complex elimination logic and real-time updates.
+
+    Include: Domain types (Tournament, Match, Competitor, BracketType with Single/Double Elimination DUs), Data access with
+    linq2db handling tree-like bracket structures with CTEs (Common Table Expressions), Service layer with Result types for
+    bracket generation algorithms and seeding logic, HTTP handlers with Server-Sent Events for live score updates, Authentication
+    with role-based access (Organizer, Referee, Spectator), Route configuration with Giraffe TokenRouter for high-performance
+    bracket navigation, Program.fs with in-memory caching for active tournament brackets, FluentMigrator with check constraints
+    ensuring bracket integrity, appsettings.json with WebSocket configuration for live updates, Dockerfile with Redis for
+    distributed cache. Include handling for bye assignments and upset reseeding.'
+- id: long_0001_exp_025
+  instruction: 'Design a music playlist collaboration API using F# Giraffe with optimistic concurrency and merge conflict
+    resolution.
+
+    Include: Domain types (Playlist, Track, Collaboration, VersionVector), Data access with linq2db implementing vector clocks
+    for conflict detection, Service layer with TaskResult for three-way merge algorithms when simultaneous edits occur, HTTP
+    handlers with ETag generation based on version vectors, Authentication with Spotify/OAuth integration for track metadata,
+    Route configuration with Giraffe combinators for playlist permissions, Program.fs with custom middleware for collaborative
+    editing session management, FluentMigrator with JSON columns for flexible track metadata, appsettings.json with CDN configuration
+    for audio file delivery, Dockerfile with ffmpeg for audio analysis. Include handling for offline synchronization and conflict
+    resolution UI data preparation.'
+- id: long_0001_exp_026
+  instruction: 'Add comprehensive request/response logging and correlation ID tracking to an existing F# Giraffe API without
+    modifying business logic.
+
+    Implement: Custom Giraffe HttpHandler wrapping all routes for request timing and logging, Serilog integration with enrichment
+    for machine name, thread id, and correlation ID, Middleware for extracting/creating X-Correlation-ID headers and propagating
+    to HttpContext.Items, Logging of request/response bodies for specific content types (excluding sensitive routes like /auth),
+    Structured logging with destructuring of F# discriminated unions, Correlation ID propagation to downstream HTTP clients
+    using IHttpClientFactory, GDPR-compliant logging with PII redaction middleware, Program.fs configuration with Serilog
+    RequestLogging and Giraffe integration, Docker logging driver configuration for centralized logging. Include performance
+    considerations for high-traffic scenarios.'
+- id: long_0001_exp_027
+  instruction: 'Build a GraphQL endpoint alongside REST in an existing F# Giraffe API using HotChocolate or custom implementation.
+
+    Include: Domain types mapping to GraphQL schema (Books, Authors with relationships), Service layer reusing existing TaskResult
+    business logic, HTTP handlers with Giraffe route "/graphql" serving HotChocolate ASP.NET Core middleware, Authentication
+    integration sharing JWT validation with REST endpoints, Query complexity analysis and depth limiting middleware, DataLoader
+    pattern implementation for N+1 query prevention, Subscription support using Redis backplane for real-time updates, Schema
+    stitching configuration for federated GraphQL, Program.fs with endpoint routing for GraphQL Playground/Banana Cake Pop,
+    appsettings.json with GraphQL query caching configuration, Dockerfile with persisted query whitelist. Include handling
+    for GraphQL-specific errors and integration with FsToolkit.ErrorHandling.'
+- id: long_0001_exp_028
+  instruction: 'Create a CI/CD pipeline management API using F# Giraffe with artifact storage and build log streaming.
+
+    Include: Domain types (Pipeline, Build, Stage, Artifact), Data access with linq2db for build metadata and S3-compatible
+    storage for artifacts, Service layer with Result types for YAML pipeline parsing validation, HTTP handlers with Giraffe
+    streaming for real-time build log tailing using Server-Sent Events, Authentication with GitHub/GitLab OAuth for repository
+    access, Route configuration with Giraffe handlers for webhook triggers, Program.fs with background worker for build queue
+    processing, FluentMigrator with JSON columns for build configuration storage, appsettings.json with MinIO or AWS S3 configuration,
+    Dockerfile with DinD (Docker-in-Docker) support for containerized builds. Include handling for build artifact caching
+    and parallel stage execution with dependency graphs.'
+- id: long_0001_exp_029
+  instruction: 'Implement CQRS (Command Query Responsibility Segregation) in a F# Giraffe inventory management API with event
+    sourcing.
+
+    Include: Domain types (InventoryItem, StockEvent with Event DUs), Data access with linq2db for read models and EventStoreDB/EventStore
+    for write model, Service layer with TaskResult separating Command handlers (AdjustStock, ReserveStock) from Query handlers
+    (GetInventory, SearchInventory), HTTP handlers with Giraffe routing directing to appropriate pipelines, Authentication
+    with claims-based access distinguishing between warehouse workers (commands) and sales staff (queries), Route configuration
+    with separate controllers/pipelines for commands vs queries, Program.fs with hosted service for projection rebuilding,
+    FluentMigrator for read model database, appsettings.json with EventStore connection configuration, Dockerfile with separate
+    images for command and query sides. Include handling for eventual consistency in read models and snapshot optimization.'
+- id: long_0001_exp_030
+  instruction: 'Design a notification delivery API using F# Giraffe with multi-channel support (Email, SMS, Push) and retry
+    policies.
+
+    Include: Domain types (Notification, DeliveryChannel, DeliveryAttempt, Template), Data access with linq2db with outbox
+    pattern for reliable delivery, Service layer with TaskResult for channel-specific validation (phone number format, email
+    regex), HTTP handlers with Giraffe warbler for async processing initiation, Authentication with API key and webhook signature
+    verification, Route configuration with content negotiation for delivery receipts, Program.fs with Polly policies (circuit
+    breaker, retry, timeout) and channel-specific HttpClient configurations, FluentMigrator with partitioned tables for high-volume
+    notification history, appsettings.json with Twilio, SendGrid, and Firebase configurations, Dockerfile with health checks
+    for external service connectivity. Include handling for dead letter queues and delivery confirmation webhooks.'
+- id: long_0002_exp_000
+  instruction: "```yaml\n- |\n  Build a complete SvelteKit 2 e-commerce marketplace frontend for multi-vendor product management.\n\
+    \  Include ALL of the following files with complete implementations:\n  \n  1. src/routes/+layout.svelte (vendor switcher,\
+    \ shopping cart state)\n  2. src/routes/+layout.server.ts (vendor context loading, currency detection)\n  3. src/routes/+page.svelte\
+    \ (featured products carousel with $state)\n  4. src/routes/+page.server.ts (load function with product recommendations)\n\
+    \  5. src/routes/products/+page.svelte (faceted search with filters for category, price, rating)\n  6. src/routes/products/[slug]/+page.svelte\
+    \ (product detail with variant selector, image gallery)\n  7. src/routes/products/[slug]/+page.server.ts (load + add to\
+    \ cart action with inventory check)\n  8. src/routes/checkout/+page.svelte (multi-step checkout with address validation)\n\
+    \  9. src/routes/checkout/+page.server.ts (payment intent creation with Stripe SDK)\n  10. src/lib/components/ProductCard.svelte\
+    \ (reusable card with hover effects using $state)\n  11. src/lib/components/CartDrawer.svelte (slide-out cart with snippet\
+    \ slots for items)\n  12. src/lib/stripe.ts (typed payment client)\n  13. src/lib/types.ts (TypeScript interfaces for\
+    \ Product, Variant, Order, Address)\n  14. src/hooks.server.ts (geolocation middleware for currency/region)\n  \n  Use\
+    \ Svelte 5 runes throughout. Implement optimistic UI for cart updates. Handle stock race conditions.\n\n- |\n  Refactor\
+    \ a legacy Svelte 4 healthcare patient portal to SvelteKit 2 with Svelte 5 runes.\n  Focus on HIPAA-compliant data handling\
+    \ and audit logging. Provide these files:\n  \n  1. src/routes/+layout.svelte (patient context, PHI warning banners)\n\
+    \  2. src/routes/+layout.server.ts (session validation with JWT refresh)\n  3. src/routes/+page.svelte (dashboard with\
+    \ upcoming appointments using $derived)\n  4. src/routes/+page.server.ts (load with encrypted data fetching)\n  5. src/routes/records/+page.svelte\
+    \ (medical history with date range filtering)\n  6. src/routes/records/[id]/+page.svelte (lab results with PDF viewer\
+    \ integration)\n  7. src/routes/records/[id]/+page.server.ts (load + download action with audit logging)\n  8. src/routes/appointments/+page.svelte\
+    \ (scheduling interface with provider availability)\n  9. src/routes/appointments/+page.server.ts (booking action with\
+    \ conflict detection)\n  10. src/lib/components/PHIModal.svelte (consent dialog with $state and snippets)\n  11. src/lib/components/Timeline.svelte\
+    \ (vertical medical timeline component)\n  12. src/lib/crypto.ts (client-side encryption utilities)\n  13. src/lib/types.ts\
+    \ (interfaces for Patient, Record, Appointment, AuditLog)\n  14. src/hooks.server.ts (security headers, authentication\
+    \ middleware)\n  \n  Ensure all data access is logged. Use TypeScript strict mode. Implement automatic session timeout.\n\
+    \n- |\n  Debug and fix a broken SvelteKit 2 investment portfolio dashboard using Svelte 5 runes.\n  The app has memory\
+    \ leaks in WebSocket connections and race conditions in stock price updates.\n  Fix and complete these files:\n  \n  1.\
+    \ src/routes/+layout.svelte (portfolio selector, real-time connection status indicator)\n  2. src/routes/+layout.server.ts\
+    \ (brokerage account validation)\n  3. src/routes/+page.svelte (portfolio overview with $effect for WebSocket cleanup)\n\
+    \  4. src/routes/+page.server.ts (load with caching strategies for market data)\n  5. src/routes/stocks/+page.svelte (watchlist\
+    \ with virtual scrolling for 1000+ items)\n  6. src/routes/stocks/[symbol]/+page.svelte (stock detail with candlestick\
+    \ chart using snippets)\n  7. src/routes/stocks/[symbol]/+page.server.ts (load + trade action with validation)\n  8. src/routes/history/+page.svelte\
+    \ (transaction history with date filtering)\n  9. src/routes/history/+page.server.ts (export action to CSV/Excel)\n  10.\
+    \ src/lib/components/Chart.svelte (reusable D3.js wrapper with $state)\n  11. src/lib/components/TradeModal.svelte (order\
+    \ entry with risk checks)\n  12. src/lib/websocket.ts (robust WebSocket client with reconnection logic)\n  13. src/lib/types.ts\
+    \ (interfaces for Position, Trade, MarketData, Portfolio)\n  14. src/hooks.server.ts (rate limiting, API key validation)\n\
+    \  \n  Fix memory leaks in $effect. Add proper cleanup for WebSocket subscriptions. Handle market hours detection.\n\n\
+    - |\n  Implement a SvelteKit 2 social media content moderation dashboard with AI-assisted review queues.\n  Handle high-volume\
+    \ content streams with virtualized lists. Include:\n  \n  1. src/routes/+layout.svelte (moderator role switcher, notification\
+    \ bell)\n  2. src/routes/+layout.server.ts (permission validation, team assignment)\n  3. src/routes/+page.svelte (moderation\
+    \ queue with $state for filtering)\n  4. src/routes/+page.server.ts (load with priority scoring algorithm)\n  5. src/routes/review/+page.svelte\
+    \ (content grid with infinite scroll)\n  6. src/routes/review/[id]/+page.svelte (detail view with AI confidence scores)\n\
+    \  7. src/routes/review/[id]/+page.server.ts (load + moderation actions: approve, reject, escalate)\n  8. src/routes/reports/+page.svelte\
+    \ (user report management)\n  9. src/routes/reports/+page.server.ts (bulk action processing)\n  10. src/lib/components/ContentCard.svelte\
+    \ (media preview with blur for sensitive content)\n  11. src/lib/components/DecisionPanel.svelte (quick actions with keyboard\
+    \ shortcuts)\n  12. src/lib/ai.ts (typed AI moderation client)\n  13. src/lib/types.ts (interfaces for Content, ModerationDecision,\
+    \ UserReport, Moderator)\n  14. src/hooks.server.ts (role-based access control, audit logging)\n  \n  Use Svelte 5 runes.\
+    \ Implement optimistic UI for moderation actions. Add keyboard navigation support.\n\n- |\n  Design a SvelteKit 2 IoT\
+    \ smart home controller for managing heterogeneous device ecosystems.\n  Support real-time device discovery and automation\
+    \ rule editing. Provide:\n  \n  1. src/routes/+layout.svelte (home selector, connection status for hub)\n  2. src/routes/+layout.server.ts\
+    \ (hub authentication, device registry sync)\n  3. src/routes/+page.svelte (room overview with device tiles using $state)\n\
+    \  4. src/routes/+page.server.ts (load with device state aggregation)\n  5. src/routes/devices/+page.svelte (device list\
+    \ with protocol filtering: Zigbee, Z-Wave, WiFi)\n  6. src/routes/devices/[id]/+page.svelte (device control panel with\
+    \ capability negotiation)\n  7. src/routes/devices/[id]/+page.server.ts (load + command action with retry logic)\n  8.\
+    \ src/routes/automations/+page.svelte (visual rule builder with drag-drop)\n  9. src/routes/automations/+page.server.ts\
+    \ (save action with validation and deployment)\n  10. src/lib/components/DeviceTile.svelte (reusable control with state\
+    \ binding)\n  11. src/lib/components/AutomationFlow.svelte (node-based editor using snippets)\n  12. src/lib/iot.ts (typed\
+    \ device communication client)\n  13. src/lib/types.ts (interfaces for Device, Automation, Room, Capability)\n  14. src/hooks.server.ts\
+    \ (device token validation, rate limiting for commands)\n  \n  Use Svelte 5 runes throughout. Handle offline device states\
+    \ gracefully. Implement real-time updates via Server-Sent Events.\n\n- |\n  Build a SvelteKit 2 interactive learning management\
+    \ system with live code execution and collaboration.\n  Support real-time cursor tracking and synchronized content editing.\
+    \ Include:\n  \n  1. src/routes/+layout.svelte (course navigation, student progress indicator)\n  2. src/routes/+layout.server.ts\
+    \ (enrollment validation, subscription checking)\n  3. src/routes/+page.svelte (course dashboard with $derived for completion\
+    \ stats)\n  4. src/routes/+page.server.ts (load with personalized learning path)\n  5. src/routes/lessons/+page.svelte\
+    \ (lesson tree with expand/collapse state)\n  6. src/routes/lessons/[id]/+page.svelte (split-pane editor with live preview)\n\
+    \  7. src/routes/lessons/[id]/+page.server.ts (load + progress update action)\n  8. src/routes/labs/+page.svelte (code\
+    \ playground with multiple file support)\n  9. src/routes/labs/+page.server.ts (code execution via sandboxed API)\n  10.\
+    \ src/lib/components/CodeEditor.svelte (Monaco editor wrapper with $state)\n  11. src/lib/components/PeerCursors.svelte\
+    \ (live collaboration indicators)\n  12. src/lib/collab.ts (WebRTC presence client)\n  13. src/lib/types.ts (interfaces\
+    \ for Course, Lesson, Submission, UserPresence)\n  14. src/hooks.server.ts (authentication, plagiarism detection middleware)\n\
+    \  \n  Use Svelte 5 runes. Implement debounced auto-save. Handle code execution timeouts securely.\n\n- |\n  Create a\
+    \ SvelteKit 2 real estate property management platform with virtual tour integration.\n  Handle image optimization and\
+    \ document signing workflows. Provide:\n  \n  1. src/routes/+layout.svelte (agency branding, saved searches drawer)\n\
+    \  2. src/routes/+layout.server.ts (agent authentication, MLS data access)\n  3. src/routes/+page.svelte (featured listings\
+    \ map with $state for bounds)\n  4. src/routes/+page.server.ts (load with geospatial queries)\n  5. src/routes/listings/+page.svelte\
+    \ (search results with virtual scrolling)\n  6. src/routes/listings/[id]/+page.svelte (detail view with 360 tour embed,\
+    \ mortgage calculator)\n  7. src/routes/listings/[id]/+page.server.ts (load + schedule viewing action)\n  8. src/routes/documents/+page.svelte\
+    \ (lease agreements with e-signature)\n  9. src/routes/documents/+page.server.ts (PDF generation and signing webhook)\n\
+    \  10. src/lib/components/PropertyCard.svelte (image gallery with lazy loading)\n  11. src/lib/components/TourViewer.svelte\
+    \ (360 viewer wrapper with hotspots)\n  12. src/lib/maps.ts (typed mapping API client)\n  13. src/lib/types.ts (interfaces\
+    \ for Property, Listing, Appointment, Document)\n  14. src/hooks.server.ts (MLS API authentication, document access control)\n\
+    \  \n  Use Svelte 5 runes. Implement image optimization pipeline. Handle offline map tile caching.\n\n- |\n  Develop a\
+    \ SvelteKit 2 food delivery logistics dashboard with real-time driver tracking.\n  Optimize for mobile dispatchers with\
+    \ offline-first capabilities. Include:\n  \n  1. src/routes/+layout.svelte (restaurant switcher, active order count)\n\
+    \  2. src/routes/+layout.server.ts (restaurant auth, zone validation)\n  3. src/routes/+page.svelte (live orders map with\
+    \ driver positions using $state)\n  4. src/routes/+page.server.ts (load with active orders aggregation)\n  5. src/routes/orders/+page.svelte\
+    \ (order queue with status filtering and sorting)\n  6. src/routes/orders/[id]/+page.svelte (order detail with ETA calculation,\
+    \ chat)\n  7. src/routes/orders/[id]/+page.server.ts (load + status update action)\n  8. src/routes/drivers/+page.svelte\
+    \ (driver management with shift tracking)\n  9. src/routes/drivers/+page.server.ts (assignment optimization algorithm)\n\
+    \  10. src/lib/components/OrderCard.svelte (compact order summary with actions)\n  11. src/lib/components/MapView.svelte\
+    \ (interactive map with route visualization)\n  12. src/lib/tracking.ts (GPS tracking client with fallback)\n  13. src/lib/types.ts\
+    \ (interfaces for Order, Driver, Restaurant, DeliveryZone)\n  14. src/hooks.server.ts (restaurant API keys, driver authentication)\n\
+    \  \n  Use Svelte 5 runes. Implement optimistic UI for status updates. Handle WebSocket reconnection for drivers.\n\n\
+    - |\n  Construct a SvelteKit 2 live streaming broadcast dashboard with stream health monitoring.\n  Support multi-platform\
+    \ streaming and real-time chat moderation. Provide:\n  \n  1. src/routes/+layout.svelte (stream key management, OBS integration\
+    \ status)\n  2. src/routes/+layout.server.ts (broadcaster authentication, platform tokens)\n  3. src/routes/+page.svelte\
+    \ (stream health metrics with $effect for polling)\n  4. src/routes/+page.server.ts (load with analytics aggregation)\n\
+    \  5. src/routes/streams/+page.svelte (stream history with thumbnail grid)\n  6. src/routes/streams/[id]/+page.svelte\
+    \ (analytics detail with viewer retention graph)\n  7. src/routes/streams/[id]/+page.server.ts (load + clip creation action)\n\
+    \  8. src/routes/chat/+page.svelte (moderation interface with keyword filtering)\n  9. src/routes/chat/+page.server.ts\
+    \ (ban/timeout actions with rate limiting)\n  10. src/lib/components/StreamPreview.svelte (WebRTC preview with connection\
+    \ status)\n  11. src/lib/components/ChatMessage.svelte (message with moderation actions)\n  12. src/lib/streaming.ts (typed\
+    \ streaming API client)\n  13. src/lib/types.ts (interfaces for Stream, Viewer, ChatMessage, Platform)\n  14. src/hooks.server.ts\
+    \ (webhook verification, stream key validation)\n  \n  Use Svelte 5 runes. Handle connection drops gracefully. Implement\
+    \ real-time viewer count updates.\n\n- |\n  Design a SvelteKit 2 travel itinerary planner with multi-city route optimization.\n\
+    \  Integrate flight APIs and hotel aggregators with caching strategies. Include:\n  \n  1. src/routes/+layout.svelte (trip\
+    \ selector, budget tracker)\n  2. src/routes/+layout.server.ts (user preferences, loyalty program sync)\n  3. src/routes/+page.svelte\
+    \ (upcoming trips timeline with $derived for days remaining)\n  4. src/routes/+page.server.ts (load with weather forecasts)\n\
+    \  5. src/routes/plan/+page.svelte (drag-drop itinerary builder with day sections)\n  6. src/routes/plan/[id]/+page.svelte\
+    \ (detail view with flight/hotel alternatives)\n  7. src/routes/plan/[id]/+page.server.ts (load + booking action with\
+    \ confirmation)\n  8. src/routes/explore/+page.svelte (destination discovery with filters)\n  9. src/routes/explore/+page.server.ts\
+    \ (search with API aggregation and deduplication)\n  10. src/lib/components/ActivityCard.svelte (reusable activity with\
+    \ booking status)\n  11. src/lib/components/RouteMap.svelte (multi-stop route visualization)\n  12. src/lib/travel.ts\
+    \ (typed API client with caching)\n  13. src/lib/types.ts (interfaces for Trip, Flight, Hotel, Activity, Itinerary)\n\
+    \  14. src/hooks.server.ts (API rate limiting, price alert webhooks)\n  \n  Use Svelte 5 runes. Implement optimistic UI\
+    \ for itinerary changes. Handle API failures with fallback data.\n\n- |\n  Build a SvelteKit 2 esports tournament bracket\
+    \ management system with real-time updates.\n  Support double elimination and Swiss system formats. Provide:\n  \n  1.\
+    \ src/routes/+layout.svelte (tournament selector, live match ticker)\n  2. src/routes/+layout.server.ts (organizer authentication,\
+    \ tournament access)\n  3. src/routes/+page.svelte (dashboard with $state for live matches)\n  4. src/routes/+page.server.ts\
+    \ (load with bracket progression)\n  5. src/routes/brackets/+page.svelte (interactive bracket visualization)\n  6. src/routes/brackets/[id]/+page.svelte\
+    \ (match detail with score reporting)\n  7. src/routes/brackets/[id]/+page.server.ts (load + score submission action)\n\
+    \  8. src/routes/teams/+page.svelte (team registration and roster management)\n  9. src/routes/teams/+page.server.ts (registration\
+    \ with eligibility checks)\n  10. src/lib/components/MatchCard.svelte (live match with score editing)\n  11. src/lib/components/BracketTree.svelte\
+    \ (tournament tree visualization)\n  12. src/lib/tournament.ts (bracket calculation logic)\n  13. src/lib/types.ts (interfaces\
+    \ for Tournament, Match, Team, Player, Bracket)\n  14. src/hooks.server.ts (score validation, anti-cheat integration)\n\
+    \  \n  Use Svelte 5 runes. Implement WebSocket updates for live scores. Handle bracket regeneration edge cases.\n\n- |\n\
+    \  Implement a SvelteKit 2 HR applicant tracking system with structured interview scoring.\n  Support calendar integration\
+    \ and collaborative hiring decisions. Include:\n  \n  1. src/routes/+layout.svelte (job requisition switcher, hiring pipeline\
+    \ view)\n  2. src/routes/+layout.server.ts (recruiter authentication, department permissions)\n  3. src/routes/+page.svelte\
+    \ (dashboard with $derived for time-to-fill metrics)\n  4. src/routes/+page.server.ts (load with interview schedules)\n\
+    \  5. src/routes/candidates/+page.svelte (applicant pool with kanban board)\n  6. src/routes/candidates/[id]/+page.svelte\
+    \ (profile with resume viewer, scoring rubric)\n  7. src/routes/candidates/[id]/+page.server.ts (load + feedback submission\
+    \ action)\n  8. src/routes/interviews/+page.svelte (scheduling interface with calendar conflicts)\n  9. src/routes/interviews/+page.server.ts\
+    \ (calendar sync action with availability checking)\n  10. src/lib/components/CandidateCard.svelte (applicant summary\
+    \ with quick actions)\n  11. src/lib/components/ScoreRubric.svelte (structured evaluation form)\n  12. src/lib/calendar.ts\
+    \ (calendar API integration)\n  13. src/lib/types.ts (interfaces for Candidate, Job, Interview, Feedback, Score)\n  14.\
+    \ src/hooks.server.ts (GDPR compliance, data retention policies)\n  \n  Use Svelte 5 runes. Implement optimistic UI for\
+    \ stage changes. Handle calendar sync conflicts.\n\n- |\n  Create a SvelteKit 2 warehouse inventory system with barcode\
+    \ scanning and offline support.\n  Support batch operations and cycle counting workflows. Provide:\n  \n  1. src/routes/+layout.svelte\
+    \ (warehouse selector, sync status indicator)\n  2. src/routes/+layout.server.ts (worker authentication, shift validation)\n\
+    \  3. src/routes/+page.svelte (dashboard with $state for low stock alerts)\n  4. src/routes/+page.server.ts (load with\
+    \ inventory valuation)\n  5. src/routes/stock/+page.svelte (inventory list with barcode scanning interface)\n  6. src/routes/stock/[sku]/+page.svelte\
+    \ (item detail with location history)\n  7. src/routes/stock/[sku]/+page.server.ts (load + adjustment action with reason\
+    \ codes)\n  8. src/routes/operations/+page.svelte (receiving, picking, shipping workflows)\n  9. src/routes/operations/+page.server.ts\
+    \ (batch action processing with validation)\n  10. src/lib/components/BarcodeScanner.svelte (camera-based scanning with\
+    \ $state)\n  11. src/lib/components/LocationPicker.svelte (bin location selector)\n  12. src/lib/offline.ts (IndexedDB\
+    \ sync manager)\n  13. src/lib/types.ts (interfaces for Item, Location, Movement, Batch, Worker)\n  14. src/hooks.server.ts\
+    \ (device registration, audit logging for compliance)\n  \n  Use Svelte 5 runes. Implement offline-first architecture.\
+    \ Handle concurrent edits with conflict resolution.\n\n- |\n  Develop a SvelteKit 2 weather station data visualization\
+    \ dashboard with historical analysis.\n  Support custom chart configurations and alert threshold management. Include:\n\
+    \  \n  1. src/routes/+layout.svelte (station selector, alert notification panel)\n  2. src/routes/+layout.server.ts (station\
+    \ access control, API key validation)\n  3. src/routes/+page.svelte (current conditions with $effect for live updates)\n\
+    \  4. src/routes/+page.server.ts (load with aggregated sensor data)\n  5. src/routes/history/+page.svelte (time series\
+    \ charts with date range selection)\n  6. src/routes/history/[metric]/+page.svelte (detailed analysis with comparisons)\n\
+    \  7. src/routes/history/[metric]/+page.server.ts (load + export action for CSV)\n  8. src/routes/alerts/+page.svelte\
+    \ (threshold configuration with condition builder)\n  9. src/routes/alerts/+page.server.ts (alert rule CRUD with webhook\
+    \ testing)\n  10. src/lib/components/WeatherChart.svelte (D3.js wrapper with zoom/pan)\n  11. src/lib/components/SummaryCard.svelte\
+    \ (metric display with trend indicators)\n  12. src/lib/sensors.ts (sensor data API client)\n  13. src/lib/types.ts (interfaces\
+    \ for Reading, Station, Alert, Metric, TimeRange)\n  14. src/hooks.server.ts (data validation, alert processing)\n  \n\
+    \  Use Svelte 5 runes. Implement efficient data downsampling for large datasets. Handle sensor offline states.\n\n- |\n\
+    \  Build a SvelteKit 2 collaborative music playlist editor with real-time synchronization.\n  Support audio waveform visualization\
+    \ and cross-fade editing. Provide:\n  \n  1. src/routes/+layout.svelte (playlist switcher, currently playing bar)\n  2.\
+    \ src/routes/+layout.server.ts (Spotify/Apple Music auth, subscription check)\n  3. src/routes/+page.svelte (recent playlists\
+    \ with $derived for collaboration status)\n  4. src/routes/+page.server.ts (load with listening history)\n  5. src/routes/playlist/+page.svelte\
+    \ (track list with drag-drop reordering)\n  6. src/routes/playlist/[id]/+page.svelte (detail view with waveform editing,\
+    \ comments)\n  7. src/routes/playlist/[id]/+page.server.ts (load + track addition action)\n  8. src/routes/discover/+page.svelte\
+    \ (recommendation engine interface)\n  9. src/routes/discover/+page.server.ts (search with multi-source aggregation)\n\
+    \  10. src/lib/components/TrackRow.svelte (audio preview with playhead)\n  11. src/lib/components/Waveform.svelte (canvas-based\
+    \ waveform with selections)\n  12. src/lib/audio.ts (Web Audio API wrapper)\n  13. src/lib/types.ts (interfaces for Track,\
+    \ Playlist, Collaboration, AudioRegion)\n  14. src/hooks.server.ts (streaming API proxy, copyright compliance)\n  \n \
+    \ Use Svelte 5 runes. Implement optimistic UI for playlist edits. Handle audio format incompatibilities.\n\n- |\n  Design\
+    \ a SvelteKit 2 photography client proofing gallery with watermarking and selection approval.\n  Support batch downloads\
+    \ and print size calculations. Include:\n  \n  1. src/routes/+layout.svelte (gallery selector, client branding)\n  2.\
+    \ src/routes/+layout.server.ts (client authentication, expiration checking)\n  3. src/routes/+page.svelte (gallery grid\
+    \ with $state for selection mode)\n  4. src/routes/+page.server.ts (load with watermarked image URLs)\n  5. src/routes/gallery/+page.svelte\
+    \ (masonry layout with lazy loading)\n  6. src/routes/gallery/[photo]/+page.svelte (lightbox with metadata, favorite toggle)\n\
+    \  7. src/routes/gallery/[photo]/+page.server.ts (load + favorite action)\n  8. src/routes/selections/+page.svelte (client\
+    \ picks with print size calculator)\n  9. src/routes/selections/+page.server.ts (finalize selection action with notification)\n\
+    \  10. src/lib/components/PhotoCard.svelte (image with watermark overlay)\n  11. src/lib/components/PrintCalculator.svelte\
+    \ (size/price calculator)\n  12. src/lib/images.ts (image processing client)\n  13. src/lib/types.ts (interfaces for Gallery,\
+    \ Photo, Selection, PrintSpec, Client)\n  14. src/hooks.server.ts (download limiting, image optimization)\n  \n  Use Svelte\
+    \ 5 runes. Implement secure image serving with expiring URLs. Handle large galleries with virtual scrolling.\n\n- |\n\
+    \  Implement a SvelteKit 2 fitness tracking integration dashboard with wearable device support.\n  Sync with Apple Health,\
+    \ Fitbit, and Garmin APIs with conflict resolution. Provide:\n  \n  1. src/routes/+layout.svelte (device connection status,\
+    \ goal progress rings)\n  2. src/routes/+layout.server.ts (OAuth token management, health data consent)\n  3. src/routes/+page.svelte\
+    \ (activity summary with $derived for streak calculation)\n  4. src/routes/+page.server.ts (load with normalized data\
+    \ from multiple sources)\n  5. src/routes/activities/+page.svelte (workout history with map visualization)\n  6. src/routes/activities/[id]/+page.svelte\
+    \ (activity detail with heart rate zones)\n  7. src/routes/activities/[id]/+page.server.ts (load + edit action for metadata)\n\
+    \  8. src/routes/goals/+page.svelte (target setting with progress projections)\n  9. src/routes/goals/+page.server.ts\
+    \ (goal creation with smart suggestions)\n  10. src/lib/components/ActivityCard.svelte (workout summary with intensity\
+    \ graph)\n  11. src/lib/components/MetricChart.svelte (trend analysis with comparisons)\n  12. src/lib/wearables.ts (unified\
+    \ device API abstraction)\n  13. src/lib/types.ts (interfaces for Activity, Metric, Goal, Device, HealthData)\n  14. src/hooks.server.ts\
+    \ (HIPAA considerations, data sync scheduling)\n  \n  Use Svelte 5 runes. Handle duplicate data from multiple devices.\
+    \ Implement background sync for historical data.\n\n- |\n  Create a SvelteKit 2 customer support ticket system with knowledge\
+    \ base integration.\n  Support SLA tracking and sentiment analysis for priority scoring. Include:\n  \n  1. src/routes/+layout.svelte\
+    \ (queue switcher, agent availability status)\n  2. src/routes/+layout.server.ts (agent authentication, shift management)\n\
+    \  3. src/routes/+page.svelte (dashboard with $state for open ticket counts)\n  4. src/routes/+page.server.ts (load with\
+    \ SLA breach warnings)\n  5. src/routes/tickets/+page.svelte (ticket list with priority sorting and filtering)\n  6. src/routes/tickets/[id]/+page.svelte\
+    \ (detail view with customer history, AI suggestions)\n  7. src/routes/tickets/[id]/+page.server.ts (load + reply action\
+    \ with attachment handling)\n  8. src/routes/kb/+page.svelte (knowledge base with full-text search)\n  9. src/routes/kb/+page.server.ts\
+    \ (article CRUD with versioning)\n  10. src/lib/components/TicketRow.svelte (compact ticket with sentiment indicator)\n\
+    \  11. src/lib/components/ReplyComposer.svelte (rich text editor with templates)\n  12. src/lib/ai.ts (sentiment analysis\
+    \ and suggestion client)\n  13. src/lib/types.ts (interfaces for Ticket, Customer, Article, Reply, SLA)\n  14. src/hooks.server.ts\
+    \ (email webhook processing, escalation rules)\n  \n  Use Svelte 5 runes. Implement optimistic UI for status changes.\
+    \ Handle file attachments with virus scanning.\n\n- |\n  Construct a SvelteKit 2 event venue seating chart designer with\
+    \ drag-drop functionality.\n  Support multiple floor plans and ticket tier visualization. Provide:\n  \n  1. src/routes/+layout.svelte\
+    \ (venue selector, event date switcher)\n  2. src/routes/+layout.server.ts (venue manager authentication, contract validation)\n\
+    \  3. src/routes/+page.svelte (upcoming events calendar with $derived for occupancy)\n  4. src/routes/+page.server.ts\
+    \ (load with revenue projections)\n  5. src/routes/design/+page.svelte (canvas-based seat map editor with tools)\n  6.\
+    \ src/routes/design/[plan]/+page.svelte (section configuration with pricing tiers)\n  7. src/routes/design/[plan]/+page.server.ts\
+    \ (load + save action with validation)\n  8. src/routes/booking/+page.svelte (seat selection interface for customers)\n\
+    \  9. src/routes/booking/+page.server.ts (reservation action with hold logic)\n  10. src/lib/components/SeatMap.svelte\
+    \ (SVG/Canvas hybrid with zoom)\n  11. src/lib/components/SeatNode.svelte (interactive seat with status)\n  12. src/lib/canvas.ts\
+    \ (drawing utilities for floor plans)\n  13. src/lib/types.ts (interfaces for Venue, Section, Seat, Event, Reservation)\n\
+    \  14. src/hooks.server.ts (payment processing integration, seat hold expiration)\n  \n  Use Svelte 5 runes. Implement\
+    \ collision detection for seat placement. Handle concurrent seat selection conflicts.\n\n- |\n  Design a SvelteKit 2 newsroom\
+    \ editorial workflow system with"
+- id: long_0003_exp_000
+  instruction: "Refactor a monolithic F# Giraffe healthcare API that exposes patient PHI (Protected Health Information) \n\
+    in plaintext, lacks audit trails, and stores data without encryption. Transform it into a HIPAA-compliant \nsystem using\
+    \ domain-driven design with separate projects for Domain, Application, Infrastructure, and API. \nImplement field-level\
+    \ encryption for SSNs and medical record numbers, comprehensive audit logging for all \ndata access, role-based authorization\
+    \ (RBAC) for doctors/nurses/administrators, and secure file upload \nhandling for medical images. Ensure immutable audit\
+    \ logs using append-only storage."
+- id: long_0003_exp_001
+  instruction: "Design and implement a PCI-DSS compliant payment processing API in F# Giraffe that handles credit card \n\
+    transactions using the Saga pattern for distributed consistency. The system must support idempotent \npayment requests,\
+    \ implement tokenization (never storing raw card data), integrate with a mock payment \ngateway using circuit breakers\
+    \ for resilience, and maintain a complete audit trail of all financial \ntransactions. Include webhook support for asynchronous\
+    \ payment confirmations and implement 3D Secure \nauthentication flows."
+- id: long_0003_exp_002
+  instruction: "Build a high-throughput IoT telemetry ingestion service in F# Giraffe capable of handling 10,000+ \ndevice\
+    \ messages per second. Use IAsyncEnumerable for streaming processing, implement backpressure \nhandling when downstream\
+    \ systems are slow, validate device authenticity using X.509 certificate \nauthentication, and store time-series data\
+    \ in TimescaleDB. Include support for device shadow state \nmanagement, over-the-air (OTA) update distribution, and geofencing\
+    \ alerts for asset tracking."
+- id: long_0003_exp_003
+  instruction: "Create a distributed e-commerce shopping cart service in F# Giraffe using Redis for session state \nand inventory\
+    \ reservation. Implement the reservation pattern to hold inventory during checkout, \nhandle distributed conflicts using\
+    \ optimistic concurrency with ETags, support cart abandonment \nrecovery via scheduled background tasks, and integrate\
+    \ with a product catalog using the Backend \nfor Frontend (BFF) pattern. Include price calculation engines with tax and\
+    \ discount rules."
+- id: long_0003_exp_004
+  instruction: "Implement a social media feed generation API in F# Giraffe comparing \"fan-out on write\" vs \n\"fan-out on\
+    \ read\" architectures. Build both implementations, measure performance characteristics, \nand provide a hybrid approach.\
+    \ Include cursor-based pagination for infinite scroll, real-time \nupdates using SignalR integration with Giraffe, content\
+    \ moderation pipelines using async processing, \nand activity pub standards support for federated social networking."
+- id: long_0003_exp_005
+  instruction: "Develop a secure large-file upload service in F# Giraffe supporting chunked uploads, resumable \ntransfers,\
+    \ and virus scanning integration (ClamAV). Implement streaming processing to handle \nfiles larger than available memory,\
+    \ validate file types using magic numbers (not just extensions), \ngenerate presigned URLs for direct browser-to-S3 uploads,\
+    \ and implement a processing pipeline \nfor thumbnail generation and OCR text extraction using background workers."
+- id: long_0003_exp_006
+  instruction: "Design a multi-tenant SaaS API in F# Giraffe with tenant isolation strategies. Implement both \ndatabase-per-tenant\
+    \ and row-level security (RLS) approaches using PostgreSQL, create tenant \nresolution middleware that extracts tenant\
+    \ from subdomain/JWT/header, ensure cross-tenant data \nleak prevention with comprehensive integration tests, and implement\
+    \ tenant-specific customization \nthrough feature flags and white-labeling support."
+- id: long_0003_exp_007
+  instruction: "Build an API Gateway in F# Giraffe that aggregates multiple microservices, implements token-based \nrate limiting\
+    \ using the Token Bucket algorithm with Redis backing, handles request/response \ntransformation for legacy service adaptation,\
+    \ implements GraphQL federation for querying across \nservice boundaries, and provides API versioning strategies (URL,\
+    \ header, and content negotiation)."
+- id: long_0003_exp_008
+  instruction: "Create a real-time gaming leaderboard system in F# Giraffe using Redis Sorted Sets for global \nrankings,\
+    \ implementing anti-cheat validation middleware that verifies score legitimacy through \nstatistical analysis, supporting\
+    \ tournament brackets with double-elimination logic, and providing \npersonal bests tracking with percentile calculations.\
+    \ Include replay validation and speedrun \nverification workflows."
+- id: long_0003_exp_009
+  instruction: "Implement a document generation service in F# Giraffe supporting multiple output formats (PDF, \nDOCX, HTML)\
+    \ via content negotiation. Use the Giraffe View Engine for HTML templating, integrate \nwith LibreOffice/DocX libraries\
+    \ for document conversion, implement mail-merge capabilities with \ntemplate variables, and provide streaming download\
+    \ for large documents. Include digital signature \nsupport and watermarking for confidential documents."
+- id: long_0003_exp_010
+  instruction: "Design inter-service communication patterns for F# microservices using Giraffe. Implement both \nsynchronous\
+    \ (HTTP with Polly retry policies) and asynchronous (RabbitMQ/Azure Service Bus) \nmessaging, demonstrate the Outbox pattern\
+    \ for reliable message publishing, implement saga \norchestration for distributed transactions, and show mTLS (mutual\
+    \ TLS) authentication between \nservices with certificate rotation handling."
+- id: long_0003_exp_011
+  instruction: "Compare REST and GraphQL implementations in F# Giraffe by building the same domain model (blog \nplatform\
+    \ with posts, comments, authors) using both approaches. Analyze N+1 query problems in \nREST vs DataLoader pattern in\
+    \ GraphQL, implement query complexity analysis to prevent expensive \nqueries, and provide a hybrid endpoint that supports\
+    \ both paradigms. Include performance benchmarks."
+- id: long_0003_exp_012
+  instruction: "Build a background job processing system in F# Giraffe similar to Hangfire. Implement scheduled \ntasks using\
+    \ Quartz.NET integration, job idempotency keys to prevent duplicate execution, retry \nlogic with exponential backoff\
+    \ and jitter, job progress tracking via SignalR, and priority queues \nfor different job types. Include a dashboard API\
+    \ for monitoring job status and dead-letter \nqueues for failed jobs."
+- id: long_0003_exp_013
+  instruction: "Implement Event Sourcing and CQRS in F# Giraffe for a banking transaction ledger. Use Marten \n(PostgreSQL\
+    \ document store) for event storage, implement projections for read models, handle \nevent versioning and upcasting, provide\
+    \ temporal queries (point-in-time account balances), and \nimplement GDPR \"right to be forgotten\" through event redaction\
+    \ strategies while maintaining \nledger integrity."
+- id: long_0003_exp_014
+  instruction: "Create a full-text search API in F# Giraffe integrating Elasticsearch. Implement faceted search \nfor e-commerce\
+    \ product catalogs, autocomplete/suggestions using edge n-grams, query result \nhighlighting, and fuzzy matching for typo\
+    \ tolerance. Include index management strategies, \nbulk indexing endpoints for data imports, and search analytics tracking\
+    \ for query optimization."
+- id: long_0003_exp_015
+  instruction: "Design a reliable webhook delivery system in F# Giraffe with exponential backoff retry logic \n(respecting\
+    \ Retry-After headers), HMAC signature verification for payload authenticity, event \nordering guarantees using sequence\
+    \ numbers, and circuit breaker patterns for failing endpoints. \nImplement webhook endpoint validation and provide a subscription\
+    \ management API with event type \nfiltering."
+- id: long_0003_exp_016
+  instruction: "Implement secure configuration management in F# Giraffe using Azure Key Vault and HashiCorp Vault \nintegration.\
+    \ Support secrets rotation without downtime, environment-specific configuration with \ntype-safe binding, feature flags\
+    \ using LaunchDarkly or Azure App Configuration, and runtime \nconfiguration reloading. Include configuration validation\
+    \ at startup and secure defaults for \nall sensitive settings."
+- id: long_0003_exp_017
+  instruction: "Develop a comprehensive testing strategy for F# Giraffe APIs including property-based testing \nwith FsCheck\
+    \ (generating random valid/invalid requests), integration tests using TestContainers \nfor PostgreSQL/Redis, snapshot\
+    \ testing for API responses, load testing scenarios with NBomber, \nand contract testing using Pact.io for consumer-driven\
+    \ API compatibility verification."
+- id: long_0003_exp_018
+  instruction: "Optimize F# Giraffe application performance through various techniques: implement object pooling \nfor high-frequency\
+    \ allocations, use System.Text.Json source generators for faster serialization, \noptimize database queries with compiled\
+    \ expressions, implement response caching with cache \ninvalidation strategies, and use async streams (IAsyncEnumerable)\
+    \ for memory-efficient data \nprocessing. Include benchmarking with BenchmarkDotNET."
+- id: long_0003_exp_019
+  instruction: "Implement OWASP Top 10 security mitigations in F# Giraffe: Content Security Policy headers, \nHSTS, secure\
+    \ cookie settings, anti-forgery token validation, input sanitization using HTML \nencoders, SQL injection prevention through\
+    \ parameterized queries, mass assignment protection, \nand security headers middleware. Include penetration testing scenarios\
+    \ and security scanning \nintegration."
+- id: long_0003_exp_020
+  instruction: "Create a migration strategy from C# ASP.NET Core to F# Giraffe for a legacy enterprise application. \nDemonstrate\
+    \ gradual migration approaches using hybrid solutions, C# to F# interop strategies, \nshared middleware usage, and maintaining\
+    \ feature parity during transition. Include dependency \ninjection container configuration for mixed languages and testing\
+    \ strategies for the hybrid codebase."
+- id: long_0003_exp_021
+  instruction: "Build an event-driven architecture in F# Giraffe using domain events and integration events. \nImplement an\
+    \ in-process event dispatcher with scoped lifetime management, outbox pattern for \natomic database operations and event\
+    \ publishing, event versioning strategies, and event schema \nvalidation using Avro/JSON Schema. Include observability\
+    \ with distributed tracing across event handlers."
+- id: long_0003_exp_022
+  instruction: "Implement a Backend for Frontend (BFF) pattern in F# Giraffe for a mobile application. Aggregate \nmultiple\
+    \ microservice calls into single optimized endpoints, implement offline sync support with \nconflict resolution, optimize\
+    \ payload sizes for mobile networks, handle device-specific concerns \n(push notifications, deep linking), and implement\
+    \ API response caching tailored to mobile usage patterns."
+- id: long_0003_exp_023
+  instruction: "Design an analytics data pipeline API in F# Giraffe that accepts high-volume tracking events, \nvalidates\
+    \ against a strict schema using Thrift/Protobuf, batches events for efficient warehouse \nloading (Snowflake/BigQuery),\
+    \ implements real-time stream processing for live dashboards using \nApache Kafka, and handles personally identifiable\
+    \ information (PII) scrubbing before storage."
+- id: long_0003_exp_024
+  instruction: "Create a localized API in F# Giraffe supporting multiple languages and cultures. Implement \ncontent negotiation\
+    \ for language selection, resource file management for translations, RTL \n(right-to-left) text support, culture-specific\
+    \ formatting for dates/currencies/numbers, and \ntimezone handling for global users. Include a translation management\
+    \ workflow and fallback \nstrategies for missing translations."
+- id: long_0003_exp_025
+  instruction: "Implement API versioning strategies in F# Giraffe without breaking changes: URL path versioning, \nheader\
+    \ versioning (api-version), and content negotiation (Accept header). Use deprecation headers \nto signal sunset dates,\
+    \ maintain backward compatibility through adapter patterns, implement \nversioned request/response DTOs, and provide migration\
+    \ guides through OpenAPI documentation."
+- id: long_0003_exp_026
+  instruction: "Build a resilient system architecture in F# Giraffe with health check endpoints (liveness and \nreadiness),\
+    \ circuit breakers using Polly for external service calls, bulkhead isolation to prevent \ncascading failures, graceful\
+    \ degradation strategies when dependencies are down, and multi-region \ndeployment considerations with geographic routing."
+- id: long_0003_exp_027
+  instruction: "Implement a real-time chat API in F# Giraffe using WebSockets (via Giraffe's websocket support). \nHandle\
+    \ persistent connections with connection pooling, implement message history with pagination, \ntyping indicators and read\
+    \ receipts using SignalR groups, message persistence with eventual \nconsistency, and end-to-end encryption for sensitive\
+    \ communications. Include moderation and \ncontent filtering."
+- id: long_0003_exp_028
+  instruction: "Design an inventory management API in F# Giraffe handling concurrent updates through optimistic \nlocking\
+    \ (ETags/If-Match headers), implementing the reservation pattern for high-demand items, \nstock level alerts using background\
+    \ monitoring, and integration with warehouse management \nsystems. Include support for inventory adjustments, transfers\
+    \ between locations, and cycle \ncounting reconciliation."
+- id: long_0003_exp_029
+  instruction: "Create a video streaming API in F# Giraffe supporting HTTP Live Streaming (HLS) and DASH protocols. \nImplement\
+    \ adaptive bitrate streaming, range request handling for video segments, CDN integration \nwith origin shielding, DRM\
+    \ encryption for premium content, and viewer analytics tracking. Include \nthumbnail generation and video metadata extraction\
+    \ using FFmpeg integration."
+- id: long_0004_exp_000
+  instruction: 'Implement a HIPAA-compliant patient record event sourcing system in F# for a healthcare provider.
+
+    Include: PatientRegistered, TreatmentAdministered, InsuranceUpdated, RecordAccessed (audit), PatientDeceased events.
+
+    Implement an append-only PostgreSQL event store with encrypted PHI fields, Giraffe API with JWT authorization,
+
+    read model projections for current patient status, and a time-travel query endpoint to view patient state at any historical
+    point.
+
+    Use FsToolkit.ErrorHandling for validation logic ensuring treatments can''t be administered after patient death.
+
+    Add integration tests verifying audit trails capture all data access with HIPAA-compliant retention policies.'
+- id: long_0004_exp_001
+  instruction: 'Design a double-entry bookkeeping event sourcing system for a fintech startup in F#.
+
+    Include: AccountOpened, FundsDeposited, FundsWithdrawn, TransferInitiated, TransferCompleted, TransferFailed events.
+
+    Implement saga pattern using Akka.NET actors for distributed transactions across accounts, ensuring atomicity.
+
+    Create PostgreSQL-backed event store with optimistic concurrency checks, Giraffe endpoints for account queries and transfer
+    commands,
+
+    and projections for real-time balance calculations. Handle idempotency for duplicate transfer requests and implement
+
+    FsToolkit validation preventing overdrafts based on account type rules.'
+- id: long_0004_exp_002
+  instruction: 'Build an IoT device management event sourcing system in F# for smart home automation.
+
+    Include: DeviceRegistered, SensorReadingReceived, CommandExecuted, FirmwareUpdated, DeviceOffline, DeviceOnline events.
+
+    Handle out-of-order event arrival from unreliable networks using vector clocks and event versioning.
+
+    Implement PostgreSQL event store with time-series optimizations, Giraffe SignalR hub for real-time device state projections,
+
+    and Akka.NET actors for device command processing. Add conflict resolution for concurrent device configuration updates
+
+    and FsToolkit error handling for invalid state transitions (e.g., offline devices can''t receive commands).'
+- id: long_0004_exp_003
+  instruction: 'Create an MMO game inventory event sourcing system in F# with player-to-player trading.
+
+    Include: ItemAcquired, ItemEquipped, ItemTraded, ItemDestroyed, TradeProposed, TradeAccepted, TradeRejected events.
+
+    Implement sagas for atomic item exchanges between players, PostgreSQL event store with JSONB for item metadata,
+
+    Giraffe API with WebSocket support for real-time inventory updates, and read models showing player net worth.
+
+    Use FsToolkit for validating trade rules (level requirements, soul-bound items) and implement idempotency keys
+
+    to prevent item duplication during network retries. Include anti-cheat validation in command handlers.'
+- id: long_0004_exp_004
+  instruction: 'Develop a logistics package tracking event sourcing system in F# for a global courier service.
+
+    Include: PackageShipped, ScanReceivedAtFacility, CustomsCheckPassed, CustomsCheckFailed, OutForDelivery, Delivered, ReturnInitiated
+    events.
+
+    Implement geospatial projections showing package location history, PostgreSQL event store with partitioning by region,
+
+    and Giraffe API with query endpoints for delivery ETA calculations based on event history patterns.
+
+    Add Akka.NET actors for handling customs clearance workflows with external API integration,
+
+    FsToolkit validation ensuring delivered packages can''t be rescanned, and compensation logic for failed deliveries.'
+- id: long_0004_exp_005
+  instruction: 'Refactor an existing CRUD-based e-commerce order management system to use event sourcing in F#.
+
+    Start with current Entity Framework models and migrate to: OrderCreated, ItemAddedToCart, PaymentProcessed, OrderShipped,
+    OrderCancelled events.
+
+    Implement strangler fig pattern maintaining backward compatibility, PostgreSQL event store alongside existing tables,
+
+    and asynchronous projection rebuilds to populate new read models without downtime.
+
+    Use Giraffe handlers composing with legacy ASP.NET Core middleware, FsToolkit for order validation rules,
+
+    and implement event versioning strategy for zero-downtime deployments during the migration.'
+- id: long_0004_exp_006
+  instruction: 'Debug and fix an existing F# event sourcing implementation suffering from concurrent update anomalies.
+
+    The system uses PostgreSQL with READ COMMITTED isolation and experiences lost updates during high-traffic flash sales.
+
+    Implement optimistic concurrency with proper sequence numbers, compare-and-swap operations in the event store,
+
+    and retry policies with exponential backoff using FsToolkit. Add Giraffe middleware for conflict detection
+
+    and return 409 Conflict responses with current aggregate versions. Include comprehensive integration tests
+
+    simulating race conditions with parallel async workflows to verify eventual consistency.'
+- id: long_0004_exp_007
+  instruction: 'Design a GDPR-compliant "right to be forgotten" mechanism for an F# event sourcing system storing user analytics.
+
+    Approach must handle immutable event streams while satisfying data deletion requirements.
+
+    Implement crypto-shredding with encrypted events using per-user keys, key rotation strategies,
+
+    and audit logs of deletion requests. Create Giraffe endpoints for data export (portability) and erasure,
+
+    PostgreSQL implementation with encrypted JSONB columns, and projections that gracefully handle missing decryption keys.
+
+    Include FsToolkit validation ensuring admin roles can trigger erasure and legal hold exceptions.'
+- id: long_0004_exp_008
+  instruction: 'Implement aggregate snapshotting for performance optimization in a high-volume F# event sourcing system.
+
+    The system processes 10,000+ events per second for IoT sensor data and projections are becoming slow.
+
+    Add SnapshotCreated events, PostgreSQL table for snapshot storage with compression, and intelligent snapshotting
+
+    strategy based on event count thresholds. Modify Giraffe query endpoints to use snapshots as starting points
+
+    for current state reconstruction, implement Akka.NET actors for background snapshot creation,
+
+    and ensure FsToolkit validation maintains consistency between snapshots and event streams.
+
+    Include benchmarks comparing with/without snapshotting performance.'
+- id: long_0004_exp_009
+  instruction: 'Compare and implement two different event storage backends for an F# inventory system: PostgreSQL vs EventStoreDB.
+
+    Create abstracted repository interfaces allowing hot-swapping between implementations.
+
+    For PostgreSQL: implement manual optimistic concurrency, event ordering guarantees, and stream categorization.
+
+    For EventStoreDB: leverage native subscriptions, projections, and competing consumers.
+
+    Build unified Giraffe API that works with both, FsToolkit error handling for stream not found scenarios,
+
+    and comprehensive comparison metrics (latency, throughput, operational complexity) in documentation.'
+- id: long_0004_exp_010
+  instruction: 'Migrate event schema versions in an F# event sourcing system without downtime.
+
+    Current system has v1 events (flat structure) needing migration to v2 (nested structure) for a banking domain.
+
+    Implement upcaster pattern in F# discriminated unions, event store middleware that transforms events on read,
+
+    and dual-write strategy during transition period. Create Giraffe endpoints handling both formats,
+
+    PostgreSQL migration scripts for backfill operations, and FsToolkit result types for deserialization errors.
+
+    Include rollback strategy and integration tests verifying old and new event formats coexist correctly.'
+- id: long_0004_exp_011
+  instruction: 'Build a multi-tenant event sourcing system in F# with complete data isolation between tenants.
+
+    Implement tenant-aware PostgreSQL schemas or separate databases per tenant, Giraffe middleware extracting
+
+    tenant IDs from JWT claims and routing to correct event store, and projections that never cross tenant boundaries.
+
+    Include: TenantOnboarded, UserInvited, BillingEventRecorded events with strict validation using FsToolkit
+
+    preventing cross-tenant command execution. Add operational tools for tenant-specific event replay,
+
+    backup/restore per tenant, and performance monitoring isolated by tenant context.'
+- id: long_0004_exp_012
+  instruction: 'Implement an offline-first mobile sync event sourcing system in F# for field service technicians.
+
+    Include: WorkOrderStarted, PartUsed, SignatureCaptured, WorkOrderCompleted events with client-generated UUIDs
+
+    and timestamps to handle months of offline work. Create Giraffe API with sync endpoints accepting
+
+    batched events with conflict detection (last-write-wins with vector clocks), PostgreSQL event store
+
+    with device-specific streams, and projections for supervisor dashboards showing sync status.
+
+    Use FsToolkit for validating work order state transitions and implement tombstones for deleted records
+
+    that sync across devices.'
+- id: long_0004_exp_013
+  instruction: 'Create a real-time analytics dashboard using F# event sourcing with SignalR integration.
+
+    Stream events from PostgreSQL using LISTEN/NOTIFY or polling to update projections in memory,
+
+    pushing updates to connected Giraffe SignalR clients. Include: PageViewed, ConversionEvent, A/BTestAssigned events
+
+    with windowed aggregations (tumbling windows) for live metrics. Implement Akka.NET actors for partition
+
+    tolerance and load balancing, FsToolkit for event validation ensuring chronological ordering,
+
+    and backpressure handling when clients can''t keep up with event velocity.'
+- id: long_0004_exp_014
+  instruction: 'Design a saga orchestration system in F# for distributed microservices using event sourcing.
+
+    Coordinate long-running business processes across OrderService, PaymentService, and InventoryService.
+
+    Include: OrderSagaStarted, PaymentProcessed, InventoryReserved, ShippingArranged, SagaCompleted, SagaCompensated events.
+
+    Implement PostgreSQL saga state storage, Giraffe API for saga status queries, and Akka.NET actors
+
+    as saga coordinators managing timeouts and retries. Use FsToolkit for compensating transaction logic
+
+    when steps fail, ensuring eventual consistency across distributed boundaries with idempotency checks.'
+- id: long_0004_exp_015
+  instruction: 'Build an educational course enrollment event sourcing system in F# with complex prerequisite validation.
+
+    Include: StudentRegistered, CourseAddedToCart, PrerequisiteValidated, EnrollmentConfirmed, Waitlisted, Dropped events.
+
+    Implement graph-based projections tracking course dependencies, PostgreSQL event store with academic term partitioning,
+
+    and Giraffe API with real-time seat availability queries. Use FsToolkit for complex validation rules
+
+    (prerequisite chains, co-requisite requirements, GPA minimums) and implement waitlist promotion sagas
+
+    using Akka.NET actors when enrolled students drop courses.'
+- id: long_0004_exp_016
+  instruction: 'Implement temporal queries ("time machine") for an F# HR employee management event sourcing system.
+
+    Allow querying employee state as of any historical date for audit and legal discovery.
+
+    Include: Hired, SalaryChanged, Promoted, DepartmentTransferred, Terminated, Reinstated events.
+
+    Create PostgreSQL temporal table projections alongside event store, Giraffe endpoints accepting
+
+    "asOf" date parameters, and efficient event replay strategies using snapshots and binary search.
+
+    Use FsToolkit for validating retroactive corrections (correction events) and implement
+
+    point-in-time authorization checks (permissions at historical moments).'
+- id: long_0004_exp_017
+  instruction: 'Create a content moderation event sourcing system in F# for a social media platform.
+
+    Include: PostCreated, PostFlagged, ModeratorReviewed, PostRemoved, PostRestored, UserSuspended events.
+
+    Implement ML-assisted projections for toxicity scoring, PostgreSQL event store with media metadata,
+
+    and Giraffe API with admin dashboards showing moderation queues. Use FsToolkit for state machine
+
+    validation (flagged posts can''t be edited), implement soft delete patterns preserving content hashes,
+
+    and add Akka.NET actors for automated moderation workflows integrating with external AI services.'
+- id: long_0004_exp_018
+  instruction: 'Build a property management event sourcing system in F# for vacation rentals.
+
+    Include: PropertyListed, BookingRequested, PaymentConfirmed, CheckInCompleted, CheckOutCompleted, MaintenanceScheduled
+    events.
+
+    Implement calendar projection preventing double-bookings, PostgreSQL event store with availability streams,
+
+    and Giraffe API with external booking platform webhooks. Use FsToolkit for validating booking rules
+
+    (minimum stays, blackout dates, cleaning buffers) and implement pricing sagas adjusting rates
+
+    based on occupancy projections using Akka.NET actors.'
+- id: long_0004_exp_019
+  instruction: 'Implement event sourcing for a subscription billing system in F# with proration and plan changes.
+
+    Include: SubscriptionCreated, PlanChanged, PaymentSucceeded, PaymentFailed, Cancelled, Resumed events.
+
+    Create PostgreSQL projections for current MRR (Monthly Recurring Revenue) calculations,
+
+    Giraffe API with customer self-service portals, and complex billing calculation logic using
+
+    event replay for mid-cycle changes. Use FsToolkit for validating plan compatibility and
+
+    implement dunning management sagas (retry logic) with Akka.NET scheduled messages for failed payments.'
+- id: long_0004_exp_020
+  instruction: 'Design a supply chain event sourcing system in F# with blockchain anchoring for provenance.
+
+    Include: RawMaterialSourced, ManufacturingCompleted, QualityCheckPassed, ShippedToDistributor, RetailStocked, Sold events.
+
+    Implement Merkle tree projections anchoring event hashes to Ethereum for tamper-evidence,
+
+    PostgreSQL event store with supply chain partner isolation, and Giraffe API with QR code
+
+    verification endpoints showing full product history. Use FsToolkit for validating custody chain
+
+    (only current holder can transfer) and implement zero-knowledge proofs for sensitive supplier data.'
+- id: long_0004_exp_021
+  instruction: 'Refactor an existing F# web application from transaction script pattern to event sourcing.
+
+    Current system uses direct SQL updates for a project management tool. Migrate to: ProjectCreated,
+
+    TaskAdded, TaskAssigned, TimeLogged, TaskCompleted, ProjectArchived events while maintaining
+
+    existing UI contracts. Implement read model projections that populate the old DTOs, PostgreSQL
+
+    event store with backward-compatible migrations, and Giraffe handlers that bridge old and new patterns.
+
+    Use FsToolkit for workflow validation ensuring archived projects can''t be modified,
+
+    and include data migration scripts converting current state to initial events.'
+- id: long_0004_exp_022
+  instruction: 'Build a voting/auction event sourcing system in F# with cryptographic integrity.
+
+    Include: AuctionOpened, BidPlaced, BidWithdrawn, AuctionClosed, WinnerDetermined events.
+
+    Implement sealed-bid projections hiding current bids until close, PostgreSQL event store
+
+    with commit-reveal pattern support, and Giraffe API with anti-sniping rules (extending auction end time).
+
+    Use FsToolkit for bid validation (increments, maximums, credit checks) and implement
+
+    Akka.NET actors for countdown timers and automatic closure logic with event-driven notifications.'
+- id: long_0004_exp_023
+  instruction: 'Implement a testing strategy for an F# event sourcing system using property-based testing (FsCheck).
+
+    Generate random event sequences and verify aggregate invariants always hold (e.g., inventory never negative,
+
+    account balance never below overdraft limit). Create custom shrinkers for event streams,
+
+    PostgreSQL test container integration for integration tests, and Giraffe test host setup
+
+    for command/handler property tests. Include snapshot property tests verifying reconstruction
+
+    from snapshots + events equals full event replay.'
+- id: long_0004_exp_024
+  instruction: 'Create an emergency response coordination event sourcing system in F# for disaster management.
+
+    Include: IncidentReported, ResourceDispatched, ResponderEnRoute, CasualtyReported, ResourceReleased, IncidentClosed events.
+
+    Implement geospatial projections for resource allocation optimization, PostgreSQL event store
+
+    with high-availability replication, and Giraffe API with SMS gateway integration for field responders.
+
+    Use FsToolkit for validating resource availability constraints and implement priority-based
+
+    sagas using Akka.NET for multi-agency coordination workflows.'
+- id: long_0004_exp_025
+  instruction: 'Build a version control system using event sourcing in F# for document management (like Git but for business
+    documents).
+
+    Include: DocumentCreated, RevisionCommitted, BranchCreated, Merged, Reverted, AccessPermissionChanged events.
+
+    Implement CRDT-based projections for concurrent editing, PostgreSQL event store with content-addressable storage,
+
+    and Giraffe API with diff viewing and three-way merge conflict resolution. Use FsToolkit for
+
+    merge validation and implement garbage collection sagas for unreferenced document versions.'
+- id: long_0004_exp_026
+  instruction: 'Implement a recommendation engine event sourcing system in F# for an e-commerce platform.
+
+    Include: ProductViewed, RecommendationClicked, CartModified, PurchaseCompleted, RecommendationFeedbackGiven events.
+
+    Implement collaborative filtering projections updated incrementally from event streams,
+
+    PostgreSQL event store with user behavior streams, and Giraffe API with personalized feed endpoints.
+
+    Use FsToolkit for validating recommendation constraints (excluded categories, age restrictions)
+
+    and implement Akka.NET actors for real-time recommendation recalculation based on trending events.'
+- id: long_0004_exp_027
+  instruction: 'Design a configuration management event sourcing system in F# for DevOps infrastructure (similar to etcd/consul).
+
+    Include: ConfigKeyCreated, ConfigValueUpdated, ConfigDeleted, RollbackInitiated, SnapshotScheduled events.
+
+    Implement watch/notify projections for distributed system coordination, PostgreSQL event store
+
+    with TTL support for ephemeral configs, and Giraffe API with validation webhooks.
+
+    Use FsToolkit for config validation (JSON schema, environment-specific rules) and implement
+
+    distributed consensus sagas using Akka.NET Cluster for multi-node configuration agreement.'
+- id: long_0005_exp_000
+  instruction: 'Build a healthcare patient monitoring system: real-time ICU vitals streaming dashboard with operational transform
+    conflict resolution for concurrent nurse annotations. Backend (F#): Define VitalSign and Annotation DUs, implement CRDT
+    merge logic for conflicting vital updates, create SignalR Hub for WebSocket vitals streaming with backpressure handling
+    using Giraffe''s streaming capabilities, design HttpHandler pipeline (>=>) for HIPAA-compliant authentication and audit
+    logging, PostgreSQL time-series storage for vitals history with retention policies. Frontend (SvelteKit): ECG waveform
+    visualization component using Canvas API with $state for real-time data buffering, SignalR reconnection logic with exponential
+    backoff in $effect, multi-cursor presence indicators showing which nurse is annotating what, patient list with critical
+    alert badges using SvelteKit load streaming. Docker: Multi-service compose with TimescaleDB extension, F# API with health
+    checks, and Nginx reverse proxy with rate limiting.'
+- id: long_0005_exp_001
+  instruction: 'Implement a financial trading platform: real-time order book management with optimistic concurrency control
+    for trade matching. Backend (F#): Create Order and Trade DUs representing Limit/Market orders, implement operational transform
+    logic for price-time priority conflicts, SignalR Hub for broadcasting market depth updates to subscribers, Giraffe endpoints
+    using Warbler combinator for caching hot order book snapshots, JWT authentication pipeline with claim validation (>=>
+    composition), PostgreSQL with row-level security for trader isolation. Frontend (SvelteKit): Order entry form with real-time
+    validation against market data using $state, WebSocket connection pooling in $effect for multiple symbol subscriptions,
+    heatmap visualization of order book depth, portfolio page with SvelteKit server-side rendering for SEO. Docker: Compose
+    with Redis for session state, PostgreSQL with financial extensions, and F# API configured for high-frequency trading with
+    minimal GC latency.'
+- id: long_0005_exp_002
+  instruction: 'Create an e-commerce inventory management system: distributed stock reservation with conflict resolution for
+    flash sales. Backend (F#): Define Reservation and Stock DUs with Insert/Delete/Update operations, implement CRDT-based
+    counter for inventory counts handling concurrent deductions, SignalR Hub for live stock level broadcasts, Giraffe HttpHandlers
+    for idempotent reservation endpoints using the choose combinator for route matching, saga pattern implementation for distributed
+    transactions, PostgreSQL with advisory locks for inventory hotspots. Frontend (SvelteKit): Product grid with optimistic
+    stock indicators using $state, real-time "low stock" badges via SignalR $effect integration, collaborative shopping cart
+    showing friends'' activity, admin dashboard with SvelteKit form actions for bulk inventory updates. Docker: PostgreSQL
+    with connection pooling via PgBouncer, F# API with request deduplication middleware, SvelteKit static adapter for CDN
+    deployment.'
+- id: long_0005_exp_003
+  instruction: 'Develop an IoT smart factory monitoring system: real-time machine telemetry with operational transform for
+    maintenance schedule conflicts. Backend (F#): MachineTelemetry and MaintenanceWindow DUs, CRDT logic for merging overlapping
+    maintenance requests, SignalR Hub with group subscriptions per factory floor, Giraffe streaming endpoints for large telemetry
+    batches using IAsyncEnumerable, custom HttpHandler for X.509 certificate authentication of IoT devices, PostgreSQL partitioning
+    for time-series data retention. Frontend (SvelteKit): 3D factory floor plan with WebGL overlay showing machine status
+    using $state, real-time alert notification system with browser push via SignalR, maintenance calendar with conflict detection
+    visualization, SvelteKit hooks for offline-first PWA support. Docker: MQTT broker (Eclipse Mosquitto) bridging to F# API,
+    TimescaleDB hypertables, Edge gateway containers for protocol translation.'
+- id: long_0005_exp_004
+  instruction: 'Build a turn-based strategy game server: state synchronization with chess-clock timing and move validation.
+    Backend (F#): GameState and Move DUs with algebraic notation parsing, operational transform for simultaneous move resolution
+    (speed chess), SignalR Hub for game rooms with reconnection handling, Giraffe pipeline (>=>) composing authentication,
+    rate limiting, and move validation, PostgreSQL JSONB storage for game replays and analysis. Frontend (SvelteKit): Interactive
+    chessboard component with drag-drop and $state for piece positions, real-time opponent move animation via SignalR $effect,
+    spectator mode with multiple cursors showing analyst suggestions, game history browser with SvelteKit params for shareable
+    game URLs. Docker: Redis for game state caching, PostgreSQL for persistence, F# API with SignalR backplane for horizontal
+    scaling.'
+- id: long_0005_exp_005
+  instruction: 'Implement a collaborative pixel art editor: real-time drawing with layer-based operational transforms. Backend
+    (F#): Pixel, Layer, and Brush DUs supporting multi-layer composition, CRDT logic for pixel-level conflict resolution (last-write-wins
+    with vector clocks), SignalR Hub for broadcasting stroke data with delta compression, Giraffe endpoints for sprite sheet
+    generation and PNG export using streaming responses, PostgreSQL large object storage for asset versioning. Frontend (SvelteKit):
+    HTML5 Canvas editor with zoom/pan and $state for layer management, WebRTC data channel fallback when SignalR latency exceeds
+    thresholds, presence indicators showing collaborator brush cursors, gallery page with SvelteKit image optimization for
+    thumbnails. Docker: MinIO for asset blob storage, PostgreSQL for metadata, F# API with response caching headers for generated
+    sprites.'
+- id: long_0005_exp_006
+  instruction: 'Create a legal contract negotiation platform: redline tracking with operational transform for concurrent clause
+    editing. Backend (F#): Contract, Clause, and Redline DUs representing insertions/deletions/commentary, three-way merge
+    logic for conflicting edits on same clause, SignalR Hub for negotiation rooms with lawyer presence tracking, Giraffe Warbler
+    usage for memoizing expensive diff calculations, content negotiation for PDF/DOCX generation, PostgreSQL full-text search
+    for contract templates. Frontend (SvelteKit): Diff viewer component with side-by-side comparison using $state for scroll
+    synchronization, real-time comment threads via SignalR with typing indicators, clause locking mechanism with visual indicators,
+    template library with SvelteKit search endpoints. Docker: LibreOffice headless for document conversion, PostgreSQL with
+    pg_trgm for fuzzy search, F# API with request size limiting middleware.'
+- id: long_0005_exp_007
+  instruction: 'Build an interactive classroom quiz system: real-time polling with student answer aggregation and conflict
+    resolution for teacher overrides. Backend (F#): Question, Response, and Session DUs, CRDT for answer frequency counters
+    handling concurrent submissions, SignalR Hub for quiz state machine (waiting/answering/reviewing), Giraffe HttpHandlers
+    for student anonymization and GDPR compliance, PostgreSQL with encrypted columns for PII protection. Frontend (SvelteKit):
+    Student response interface with optimistic UI using $state, live results chart with Chart.js updated via SignalR $effect,
+    teacher control panel with "kick student" functionality, session analytics with SvelteKit server-side CSV export. Docker:
+    Separate read replicas for analytics queries, F# API with circuit breaker pattern for external auth providers, SvelteKit
+    adapter-node with clustering.'
+- id: long_0005_exp_008
+  instruction: 'Develop a logistics fleet tracking system: real-time vehicle positions with route optimization conflict handling.
+    Backend (F#): Vehicle, Route, and Waypoint DUs, operational transform for diverting vehicles when routes overlap, SignalR
+    Hub with geofencing notifications, Giraffe streaming for historical GPS trace retrieval, custom HttpHandler for API key
+    validation per fleet operator, PostgreSQL PostGIS extension for spatial queries and route calculations. Frontend (SvelteKit):
+    Interactive map with MapLibre GL showing vehicle clusters using $state, real-time traffic overlay via SignalR, dispatch
+    panel with drag-drop route reassignment, driver mobile view using SvelteKit responsive design. Docker: PostGIS container
+    with preloaded map data, F# API with request coalescing for identical route queries, Valkey for session storage.'
+- id: long_0005_exp_009
+  instruction: 'Implement a collaborative music playlist curator: real-time voting and track reordering with CRDT sequence
+    maintenance. Backend (F#): Track, Playlist, and Vote DUs, CRDT for playlist ordering preserving concurrent reorder operations,
+    SignalR Hub for currently playing sync across devices, Giraffe content negotiation for Spotify/Apple Music API integration,
+    Warbler caching for popular playlist aggregations, PostgreSQL JSONB for user listening history. Frontend (SvelteKit):
+    Sortable track list with optimistic reordering using $state, real-time vote buttons with SignalR broadcast, waveform visualization
+    for currently playing track, user profile with SvelteKit load functions for listening stats. Docker: RabbitMQ for async
+    music metadata enrichment, PostgreSQL with read replicas, F# API with rate limiting per IP.'
+- id: long_0005_exp_010
+  instruction: 'Create an Infrastructure-as-Code editor: real-time Terraform/HCL collaboration with plan preview execution.
+    Backend (F#): Resource, Config, and Plan DUs, operational transform for HCL block merging, SignalR Hub for streaming terraform
+    plan output lines, Giraffe endpoints with timeout handling for long-running plan operations, custom HttpHandler for AWS/Azure/GCP
+    credential validation, PostgreSQL for state file locking and history. Frontend (SvelteKit): Monaco Editor integration
+    with HCL syntax highlighting using $state for content, terminal emulator component for plan output via SignalR, resource
+    graph visualization with D3.js, module registry with SvelteKit form actions. Docker: Terraform binary in F# API container
+    with volume mounts for provider caching, PostgreSQL for state storage, isolated execution environments for plan safety.'
+- id: long_0005_exp_011
+  instruction: 'Build a collaborative interview evaluation platform: real-time scoring rubrics with calibration conflict resolution.
+    Backend (F#): Candidate, Interview, and Score DUs, CRDT for averaging concurrent interviewer scores, SignalR Hub for feedback
+    discussions with moderation, Giraffe pipeline (>=>) for HR role authorization and data anonymization, PostgreSQL row-level
+    security for interview panel isolation. Frontend (SvelteKit): Score rubric component with real-time average calculation
+    using $state, video call integration sidebar with SignalR chat, comparison view for candidate calibration sessions, hiring
+    dashboard with SvelteKit streaming for live updates. Docker: Jitsi Meet for video conferencing alongside F# API, PostgreSQL
+    with encrypted connections, S3-compatible storage for recorded interviews.'
+- id: long_0005_exp_012
+  instruction: 'Implement a real-time journalism editor: collaborative article writing with fact-checking workflow integration.
+    Backend (F#): Article, FactCheck, and Source DUs, operational transform for citation management and footnote conflicts,
+    SignalR Hub for editorial desk notifications, Giraffe streaming for large media asset uploads, custom HttpHandler for
+    journalist authentication via OAuth2 news org providers, PostgreSQL full-text search with ranking. Frontend (SvelteKit):
+    Block-based editor with embed support using $state for content tree, real-time fact-check status indicators via SignalR,
+    source verification sidebar with SvelteKit server fetches, print layout preview with CSS Paged Media. Docker: Elasticsearch
+    for article search alongside PostgreSQL, F# API with image processing (ImageSharp) for responsive images, CDN integration
+    for static assets.'
+- id: long_0005_exp_013
+  instruction: 'Develop a collaborative 3D floor plan editor: WebGL-based architectural design with concurrent object manipulation.
+    Backend (F#): Room, Furniture, and Material DUs, CRDT for 3D transform matrices (position/rotation/scale), SignalR Hub
+    with binary messagepack for efficient geometry sync, Giraffe endpoints for OBJ/FBX export with streaming, Warbler for
+    expensive room adjacency calculations, PostgreSQL for project versioning with branching. Frontend (SvelteKit): Three.js
+    viewport with orbit controls and $state for scene graph, multi-user cursor rays in 3D space via SignalR, furniture catalog
+    with drag-drop, project branching UI with SvelteKit transitions. Docker: Blender headless for mesh optimization, PostgreSQL
+    with large geometry storage, F# API with request payload compression.'
+- id: long_0005_exp_014
+  instruction: 'Create a collaborative data science notebook: real-time Python/R execution with cell output synchronization.
+    Backend (F#): Cell, Kernel, and Output DUs, operational transform for cell reordering and concurrent execution, SignalR
+    Hub for streaming execution stdout/stderr, Giraffe endpoints with timeout policies for long computations, custom HttpHandler
+    for sandboxed code execution security headers, PostgreSQL for dataset metadata and version control. Frontend (SvelteKit):
+    Monaco Editor with Python syntax highlighting using $state for cell content, matplotlib output rendering via SignalR base64
+    streaming, variable inspector panel, dataset browser with SvelteKit load streaming for large CSV previews. Docker: Jupyter
+    kernels in isolated containers communicating via ZeroMQ with F# API, PostgreSQL for notebook storage, object storage for
+    dataset files.'
+- id: long_0005_exp_015
+  instruction: 'Build a real-time voting system: secure ballot casting with verifiable audit trails and concurrent tally updates.
+    Backend (F#): Ballot, Option, and Tally DUs, homomorphic encryption for vote privacy with CRDT aggregation, SignalR Hub
+    for turnout statistics (without compromising secrecy), Giraffe pipeline for voter eligibility verification and duplicate
+    prevention, PostgreSQL with cryptographic signatures for ballot integrity. Frontend (SvelteKit): Accessible ballot interface
+    with optimistic submission using $state, real-time turnout thermometer via SignalR (anonymized), voter verification QR
+    code generation, results dashboard with SvelteKit static generation for audit publication. Docker: Hardware Security Module
+    (HSM) simulator for key storage, PostgreSQL with write-once-read-many (WORM) tables for ballots, F# API with strict CSP
+    headers.'
+- id: long_0005_exp_016
+  instruction: 'Implement a digital twin synchronizer: manufacturing equipment virtualization with real-time sensor fusion.
+    Backend (F#): PhysicalAsset, DigitalTwin, and SensorReading DUs, operational transform for calibration parameter conflicts,
+    SignalR Hub for anomaly detection alerts, Giraffe streaming for high-frequency vibration data, custom HttpHandler for
+    OPC-UA protocol bridge authentication, PostgreSQL temporal tables for twin state history. Frontend (SvelteKit): 3D equipment
+    model with live sensor heatmaps using $state, AR overlay preparation via SignalR, maintenance prediction timeline, twin
+    comparison mode with SvelteKit parallel data loading. Docker: OPC-UA client libraries in F# containers, InfluxDB for time-series
+    alongside PostgreSQL for relational data, Grafana integration for advanced analytics.'
+- id: long_0005_exp_017
+  instruction: 'Create a collaborative BPMN workflow designer: business process modeling with real-time validation and simulation.
+    Backend (F#): Process, Node, and Edge DUs, CRDT for graph structure preservation during concurrent edits, SignalR Hub
+    for simulation token game visualization, Giraffe endpoints for BPMN 2.0 XML import/export with validation, Warbler for
+    process validation rule caching, PostgreSQL for process versioning and deployment history. Frontend (SvelteKit): SVG-based
+    diagram editor with snap-to-grid using $state, simulation playback controls via SignalR, property panel with SvelteKit
+    form validation, process comparison tool for version diffing. Docker: Camunda engine for execution validation, PostgreSQL
+    with JSONB for process variables, F# API with request logging for audit trails.'
+- id: long_0005_exp_018
+  instruction: 'Build an A/B testing configuration platform: real-time experiment parameter updates with conflict resolution
+    for traffic allocation. Backend (F#): Experiment, Variant, and Allocation DUs, CRDT for percentage split adjustments preventing
+    over-allocation, SignalR Hub for immediate feature flag propagation to clients, Giraffe streaming for large user segment
+    imports, custom HttpHandler for SDK authentication with HMAC signatures, PostgreSQL for event tracking and experiment
+    results. Frontend (SvelteKit): Visual experiment designer with traffic sliders using $state, real-time statistical significance
+    calculator via SignalR, segment builder with SQL preview, results dashboard with SvelteKit server-side rendering for SEO.
+    Docker: ClickHouse for event analytics alongside PostgreSQL for configuration, Redis for feature flag caching at edge,
+    F# API with graceful degradation middleware.'
+- id: long_0005_exp_019
+  instruction: 'Develop a multi-tenant SaaS admin panel: real-time configuration sync across distributed regions with conflict
+    detection. Backend (F#): Tenant, Config, and Region DUs, operational transform for schema migration conflicts, SignalR
+    Hub with group isolation per tenant, Giraffe endpoints for configuration blue/green deployment, Warbler for tenant-specific
+    middleware composition, PostgreSQL with citus extension for sharding. Frontend (SvelteKit): Tenant switcher with context
+    preservation using $state, configuration diff viewer via SignalR, role-based access control matrix, regional deployment
+    status with SvelteKit streaming. Docker: Multi-region PostgreSQL replication, F# API with tenant resolution middleware,
+    Envoy proxy for traffic splitting.'
+- id: long_0005_exp_020
+  instruction: 'Implement a collaborative regex builder: real-time pattern testing with shared test case libraries. Backend
+    (F#): Pattern, TestCase, and MatchResult DUs, CRDT for test case ordering and categorization, SignalR Hub for match highlighting
+    coordinates, Giraffe endpoints with timeout guards for regex evaluation (ReDoS protection), custom HttpHandler for pattern
+    sanitization, PostgreSQL for pattern library with similarity search. Frontend (SvelteKit): Regex input with syntax highlighting
+    using $state, real-time match visualization via SignalR, test case table with optimistic adds/deletes, pattern explanation
+    generator with SvelteKit server endpoints. Docker: Sandboxed regex execution environment, PostgreSQL with pg_similarity
+    for pattern matching, F# API with request size limits and timeout policies.'
+- id: long_0005_exp_021
+  instruction: 'Create a Kubernetes cluster visualizer: real-time resource status with collaborative troubleshooting annotations.
+    Backend (F#): Pod, Service, and Event DUs, operational transform for annotation positioning on topology maps, SignalR
+    Hub with Kubernetes watch API streaming, Giraffe endpoints with impersonation for multi-cluster access, Warbler for resource
+    topology caching, PostgreSQL for incident timeline reconstruction. Frontend (SvelteKit): Force-directed graph of cluster
+    topology using D3.js and $state, log streaming terminal via SignalR, collaborative incident markers on timeline, RBAC
+    analyzer with SvelteKit load functions. Docker: In-cluster F# API with service account permissions, PostgreSQL for long-term
+    event storage, WebSocket proxy for kubectl exec functionality.'
+- id: long_0005_exp_022
+  instruction: 'Build a precision agriculture coordination platform: real-time tractor guidance and field boundary editing.
+    Backend (F#): Field, Tractor, and GuidancePath DUs, CRDT for field boundary adjustments considering overlapping claims,
+    SignalR Hub for RTK-GPS correction data streaming, Giraffe streaming for historical yield map data, custom HttpHandler
+    for farm equipment OAuth, PostgreSQL PostGIS for soil sampling grids. Frontend (SvelteKit): Satellite imagery overlay
+    with drawing tools using $state, tractor location tracking with heading indicators via SignalR, task assignment calendar
+    with conflict detection, harvest optimization dashboard with SvelteKit data loading. Docker: Mapbox/Maptiler for satellite
+    tiles, PostgreSQL with agricultural extensions, F# API with offline-sync support for rural connectivity.'
+- id: long_0005_exp_023
+  instruction: 'Develop a smart grid load balancer: real-time energy consumption with collaborative demand response events.
+    Backend (F#): Meter, LoadEvent, and PricingTier DUs, operational transform for scheduled load shifts during conflicts,
+    SignalR Hub for critical peak pricing notifications, Giraffe endpoints with circuit breaker patterns for utility API integrations,
+    PostgreSQL time-series for consumption patterns with anomaly detection. Frontend (SvelteKit): Real-time consumption gauges
+    with $state animations, neighborhood comparison via SignalR anonymous aggregation, demand response enrollment wizard,
+    bill projection calculator with SvelteKit form actions. Docker: MQTT broker for smart meter ingestion, TimescaleDB for
+    time-series, F# API with idempotency keys for utility commands.'
+- id: long_0005_exp_024
+  instruction: 'Implement a live sports coaching whiteboard: play diagramming with animation sequencing and conflict resolution.
+    Backend (F#): Play, Frame, and AthletePosition DUs, CRDT for animation timeline merging, SignalR Hub for broadcast play
+    drawing with latency compensation, Giraffe streaming for video clip annotation, custom HttpHandler for team roster authentication,
+    PostgreSQL for opponent tendency analysis. Frontend (SvelteKit): Canvas drawing tools with play templates using $state,
+    frame-by-frame animation scrubber via SignalR, telestration overlay on video, playbook library with SvelteKit search and
+    filtering. Docker: Video processing with FFmpeg for clip generation, PostgreSQL for play metadata, F# API with CDN integration
+    for video delivery.'
+- id: long_0005_exp_025
+  instruction: 'Create a collaborative maritime container loader: 3D stowage planning with weight distribution conflict detection.
+    Backend (F#): Container, Bay, and VesselStability DUs, operational transform for container repositioning constraints,
+    SignalR Hub for crane operator coordination, Giraffe endpoints with optimization algorithms for stowage planning, Warbler
+    for vessel stability calculation caching, PostgreSQL for customs documentation linkage. Frontend (SvelteKit): Three.js
+    bay view with weight heatmap using $state, crane schedule Gantt chart via SignalR, customs declaration integration, port
+    rotation optimizer with SvelteKit server calculations. Docker: Optimization solver (Google OR-Tools) integration, PostgreSQL
+    with document blob storage, F# API with request prioritization for critical path containers.'
+- id: long_0005_exp_026
+  instruction: 'Build a connected car diagnostic platform: real-time OBD-II data with collaborative troubleshooting sessions.
+    Backend (F#): DiagnosticCode, SensorData, and Session DUs, CRDT for diagnostic tree navigation state, SignalR Hub for
+    streaming CAN bus data, Giraffe streaming for firmware update distribution, custom HttpHandler for vehicle certificate
+    authentication, PostgreSQL for recall campaign management. Frontend (SvelteKit): Gauge cluster visualization with $state
+    for real-time RPM/speed, technician cursor sharing on wiring diagrams via SignalR, service history timeline, recall checker
+    with SvelteKit form validation. Docker: CAN bus simulator for testing, PostgreSQL for vehicle VIN decoding tables, F#
+    API with binary protocol handlers for OBD communication.'
+- id: long_0005_exp_027
+  instruction: 'Develop a network topology designer: real-time BGP configuration with simulation and conflict detection. Backend
+    (F#): Router, BGPConfig, and Route DUs, operational transform for routing policy conflicts, SignalR Hub for traceroute
+    visualization, Giraffe endpoints for configuration backup and rollback, Warbler for path calculation memoization, PostgreSQL
+    for configuration versioning with diff storage. Frontend (SvelteKit): Interactive network graph with device icons using
+    $state, real-time link status via SignalR, configuration diff viewer, simulation results panel with SvelteKit streaming
+    for large routing tables. Docker: GNS3/VIRL integration for simulation, PostgreSQL with network address types, F# API
+    with configuration validation against production devices.'
+- id: long_0005_exp_028
+  instruction: 'Implement a legislative amendment tracker: real-time bill markup with parliamentary procedure enforcement.
+    Backend (F#): Bill, Amendment, and Section DUs, operational transform for line-item veto conflicts, SignalR Hub for voting
+    quorum notifications, Giraffe endpoints with digital signature verification for amendments, custom HttpHandler for legislator
+    role verification, PostgreSQL for statute cross-referencing and impact analysis. Frontend (SvelteKit): Document comparison
+    with legislative styling using $state, voting record integration via SignalR, amendment sponsor tracking, public comment
+    management with SvelteKit pagination. Docker: Digital signature HSM integration, PostgreSQL with full-text search for
+    statute lookup, F# API with audit logging to immutable storage (WORM).'
+- id: long_0006_exp_000
+  instruction: 'Create a step-by-step migration guide for converting a simple e-commerce product catalog from Svelte 4 to
+    Svelte 5. Focus on transforming a writable store-based shopping cart into $state runes. Include: the original cartStore.ts
+    implementation with add/remove methods, the migrated Cart.svelte component using $state and $derived for totals, common
+    pitfalls with proxy-based reactivity breaking when passing objects to child components, and a beginner-friendly explanation
+    of why $state.snapshot is needed for localStorage persistence. Target junior developers with clear before/after comparisons.'
+- id: long_0006_exp_001
+  instruction: 'Refactor a real-time patient monitoring dashboard in a healthcare application from Svelte 4 to Svelte 5. The
+    system uses onMount/onDestroy for WebSocket connections and $: declarations for vital sign calculations. Migrate to $effect
+    with proper cleanup functions for medical device streams, handle the edge case where $derived cannot reference itself
+    (circular dependency) in heart rate variability calculations, and ensure TypeScript strict mode compatibility with $state
+    typing. Include error handling for connection drops and reconnection logic within $effect.'
+- id: long_0006_exp_002
+  instruction: Debug a migrated fintech trading platform where $derived statements are causing performance bottlenecks during
+    high-frequency market data updates. The Svelte 4 version used custom stores with batching; the Svelte 5 migration created
+    excessive $derived chains. Identify the anti-pattern, refactor to use $state with manual batching using untrack() where
+    appropriate, and implement a virtual scrolling order book that maintains 60fps with 1000+ reactive rows. Include profiling
+    techniques and memory leak detection for $effect cleanup functions.
+- id: long_0006_exp_003
+  instruction: 'Design a migration strategy for an IoT device management system with 50+ components using the legacy Context
+    API and slot patterns. Create a phased approach: Phase 1 migrates device list views from export let to $props with bindable
+    directives for two-way configuration updates; Phase 2 converts <slot name="details"> to typed snippets with render tags;
+    Phase 3 handles the breaking change where $$slots is no longer available for conditional slot rendering. Address security
+    constraints ensuring device authentication state doesn''t leak between $effect instantiations in multi-tenant views.'
+- id: long_0006_exp_004
+  instruction: 'Implement a comprehensive form migration for an insurance claim processing system converting from Svelte 4
+    export let bindings to Svelte 5 $props with bindable. Handle complex nested form objects with validation, migrating $:
+    reactive statements that computed derived field values to $derived.by with proper dependency tracking. Include edge cases
+    for file upload components using bind:this references, form reset functionality that worked with $: statements but fails
+    with $derived, and accessibility considerations ensuring error announcements still work with the new reactivity model.'
+- id: long_0006_exp_005
+  instruction: 'Compare the memory usage and reactivity performance between Svelte 4 writable stores and Svelte 5 $state runes
+    in a data visualization dashboard rendering 10,000+ SVG elements. Create benchmark components: one using stores with manual
+    subscription management, one using $state with fine-grained reactivity. Analyze garbage collection patterns, demonstrate
+    when to use $state.raw for external library integration (D3.js), and explain the conceptual shift from pull-based reactivity
+    (stores) to push-based (signals). Include Chrome DevTools profiling screenshots descriptions.'
+- id: long_0006_exp_006
+  instruction: 'Explain the conceptual migration from $: reactive declarations to $effect and $derived in a content management
+    system with rich text editing. Address the "temporal dead zone" confusion where $: statements ran immediately but $effect
+    runs after DOM updates. Show how to migrate side-effect-heavy $: blocks (autosave, word count, spell check) to $effect
+    with proper dependency arrays (or lack thereof), and convert computed derived data ($: readingTime = ...) to $derived.
+    Include common migration errors like infinite loops in $effect and the solution using untrack().'
+- id: long_0006_exp_007
+  instruction: Migrate a complex social media feed component from createEventDispatcher to callback props in Svelte 5. The
+    component hierarchy includes Feed → Post → Comment → Reaction, with events bubbling for like, share, reply, and report
+    actions. Refactor to use callback props with TypeScript strict typing, handle the edge case where parent components conditionally
+    pass handlers (previously handled by checking $$slots), and implement a type-safe event delegation pattern. Include error
+    boundaries to handle cases where async callback props throw errors in the child component.
+- id: long_0006_exp_008
+  instruction: 'Convert a design system component library from Svelte 4 slot patterns to Svelte 5 snippets while maintaining
+    backward compatibility for consumers. Create a Card component that previously used <slot name="header">, <slot name="body">,
+    and $$slots checks for optional content. Migrate to typed snippets with {#snippet} and {@render}, implement a compatibility
+    layer allowing gradual adoption, and handle the breaking change where slot props (let: directives) become snippet parameters.
+    Include Storybook stories demonstrating both patterns and migration codemods using AST transformations.'
+- id: long_0006_exp_009
+  instruction: 'Handle circular dependency edge cases when migrating a project management tool''s Gantt chart from Svelte
+    4 to 5. The chart has tasks with start/end dates derived from dependencies, creating circular $: statements that were
+    manually ordered. Show how $derived fails with circular references and refactor to use $state with explicit update functions
+    or $effect with dependency tracking. Include a topological sort implementation for task dependencies and explain why $derived.by
+    doesn''t solve circularity but $effect with explicit dependencies might.'
+- id: long_0006_exp_010
+  instruction: Create a hybrid migration approach for a large enterprise CRM allowing gradual adoption of Svelte 5 runes alongside
+    legacy Svelte 4 components. Implement a boundary pattern where Svelte 5 islands can exist within Svelte 4 layouts, handle
+    store interop (converting $state to readable stores for legacy components), and manage event dispatching between runes-based
+    children and legacy parent components. Address build configuration using vite-plugin-svelte to handle mixed syntax and
+    testing strategies ensuring integration points work correctly.
+- id: long_0006_exp_011
+  instruction: 'Migrate a server-side rendered e-commerce checkout flow handling hydration mismatches when introducing $state.
+    The checkout uses SvelteKit load functions and previously relied on $: for client-side calculations of shipping costs.
+    Show how $derived behaves differently during SSR vs hydration, implement $state with $effect.pre for isomorphic calculations,
+    and handle the edge case where localStorage-based cart persistence causes hydration mismatches. Include SvelteKit hooks
+    configuration and error handling for prerendering pages with $state-dependent content.'
+- id: long_0006_exp_012
+  instruction: 'Convert a complex table component library from Svelte 4 to 5, focusing on the migration of dynamic slot content
+    to render props/snippets. The table supports sorting, filtering, pagination, and custom cell renderers via slots with
+    let: bindings. Migrate to typed snippets with parameters, handle the performance optimization of virtual scrolling with
+    $state, and ensure $derived columns update efficiently when sort state changes. Include accessibility considerations for
+    screen readers with dynamic content updates using $effect for ARIA live regions.'
+- id: long_0006_exp_013
+  instruction: Refactor a video conferencing application from Svelte 4 event dispatchers to Svelte 5 callback props, handling
+    the complexity of media track management. Components include CameraPreview, AudioMixer, and ScreenShare with events for
+    track started, stopped, and error states. Implement callback props with cleanup functions (returning destroy handlers),
+    migrate onMount/onDestroy for media permissions to $effect with proper camera/microphone cleanup to prevent memory leaks,
+    and handle the edge case where callback props change dynamically causing duplicate event listeners.
+- id: long_0006_exp_014
+  instruction: Migrate a multi-tenant SaaS dashboard with deeply nested context (setContext/getContext) to Svelte 5. The app
+    has TenantContext, UserContext, and FeatureFlagContext nested 5+ levels deep. Refactor to use $state with context providers,
+    handle the breaking change where context is no longer store-based (cannot subscribe with $ prefix), and implement a type-safe
+    context factory. Include security constraints ensuring tenant isolation doesn't break when $state objects are accidentally
+    shared between contexts, and performance optimization for feature flag checks that run frequently.
+- id: long_0006_exp_015
+  instruction: Optimize memory-constrained $effect cleanup in a real-time analytics dashboard displaying 50+ concurrent data
+    streams. The Svelte 4 version used onDestroy for WebSocket cleanup; the Svelte 5 migration initially leaked memory by
+    not cleaning up $effect subscriptions. Implement proper cleanup functions returning teardown logic, demonstrate using
+    $effect.root for component-level cleanup guards, and show how to handle the edge case where $effect dependencies change
+    rapidly (stream switching) causing cleanup/setup thrashing. Include memory profiling techniques for browser DevTools.
+- id: long_0006_exp_016
+  instruction: 'Handle race conditions in $effect when migrating a collaborative editing tool (like Google Docs) from Svelte
+    4 to 5. The editor uses operational transforms with async acknowledgments from the server. Show how $: statements handled
+    async sequentially but $effect can cause race conditions with rapid edits. Implement proper cleanup using abort controllers
+    in $effect, derive optimistic UI state using $derived from $state, and handle the edge case where $effect runs but the
+    component destroys before async completion. Include conflict resolution strategies for concurrent edits.'
+- id: long_0006_exp_017
+  instruction: 'Create a testing strategy for validating Svelte 4 to 5 migrations in a banking application where behavioral
+    equivalence is legally required. Write unit tests using Vitest and @testing-library/svelte that verify: store-based state
+    matches $state behavior, event dispatching matches callback props, and lifecycle timing (onMount vs $effect) produces
+    identical DOM states. Include tests for edge cases like rapid prop changes during async operations, memory leak detection
+    for $effect cleanup, and snapshot testing for component output before/after migration.'
+- id: long_0006_exp_018
+  instruction: 'Migrate animation and transition patterns from Svelte 4 to 5 in a media gallery with drag-and-drop reordering.
+    The gallery uses flip animations, crossfade transitions, and custom js actions. Address how $: statements that triggered
+    animations (calculating layout positions) migrate to $effect, handle the timing differences (layout effects vs derived
+    state), and ensure $state-based position tracking works with Svelte''s built-in transition system. Include performance
+    optimization for 100+ images using $derived for visibility culling and $effect for intersection observer integration.'
+- id: long_0006_exp_019
+  instruction: Convert a Progressive Web App with offline synchronization capabilities from Svelte 4 stores to Svelte 5 $state.
+    The app uses IndexedDB, service workers, and background sync. Migrate the offline store wrapper to $state with $effect
+    for persistence, handle the edge case where $state proxy objects cannot be structured cloned for postMessage to service
+    workers (using $state.snapshot), and implement optimistic UI updates with rollback on sync failure. Include background
+    sync status indicators using $derived from multiple $state sources (network, sync queue, last update time).
+- id: long_0006_exp_020
+  instruction: Migrate a multiplayer game lobby from Svelte 4 writable stores to Svelte 5 $state, handling high-frequency
+    state updates (30fps) from the game server. Optimize for performance by using $state with fine-grained reactivity rather
+    than object replacement, implement game state interpolation in $derived for smooth animations, and handle the edge case
+    where $effect for input handling causes re-renders that drop frames. Include lag compensation techniques using $state
+    for predicted positions and $derived for reconciled server states.
+- id: long_0006_exp_021
+  instruction: 'Refactor SvelteKit load functions and page data patterns from Svelte 4 to 5 in a news aggregation site. Migrate
+    from $page store usage to $props for page data, convert layout data dependencies from $: statements to $derived, and handle
+    the edge case where $page.url changes trigger cascading updates in $effect (previously handled by goto and reactive statements).
+    Include error handling for failed loads with $state for error boundaries, and demonstrate how to migrate afterNavigate
+    hooks to $effect with proper cleanup for analytics tracking.'
+- id: long_0006_exp_022
+  instruction: Implement error boundaries and fault tolerance for $effect failures in a critical medical device monitoring
+    interface. When $effect throws (e.g., network failure fetching patient vitals), the component must degrade gracefully
+    without crashing the entire dashboard. Create an ErrorBoundary component using $state for error tracking, implement retry
+    logic with exponential backoff in $effect, and handle the case where $derived depends on potentially undefined $state
+    from failed effects. Include logging strategies for debugging $effect failures in production without exposing PHI (Protected
+    Health Information).
+- id: long_0006_exp_023
+  instruction: 'Convert a complex routing and navigation state management system from Svelte 4 to 5 in a documentation site
+    with nested sections. Previously used writable stores for navigation history and $: for breadcrumb calculations. Migrate
+    to $state for history stack, $derived for breadcrumb generation with memoization to prevent recalculation on every render,
+    and handle browser back/forward button integration using $effect with popstate event listeners. Include deep linking with
+    hash fragments and $effect.pre for scroll restoration.'
+- id: long_0006_exp_024
+  instruction: Migrate a data grid with inline editing capabilities from Svelte 4 to 5, focusing on the complexity of cell-level
+    reactivity. The grid has 1000+ cells with individual edit states, validation, and async save operations. Convert from
+    export let cellData with two-way binding to $props with bindable, handle the performance implication of $state in large
+    arrays (using Map or object keys instead of array index), and implement optimistic updates with rollback. Include keyboard
+    navigation using $effect for focus management and $derived for selection state calculations spanning multiple cells.
+- id: long_0006_exp_025
+  instruction: 'Refactor a chat application with message threading and real-time updates from Svelte 4 to 5. The app uses
+    stores for message cache, $: for thread statistics (unread counts, participant presence), and event dispatchers for message
+    actions. Migrate to $state with Map for message storage, $derived for thread statistics with efficient recalculation,
+    and callback props for reply/reaction/delete actions. Handle the edge case where $effect for scroll-to-bottom triggers
+    on every new message but should respect user manual scroll position (scroll anchoring logic).'
+- id: long_0006_exp_026
+  instruction: 'Create a migration codemod and AST transformation script for automatically converting Svelte 4 components
+    to Svelte 5 syntax. Use recast and svelte/compiler to transform: $: reactive statements to $derived or $effect, export
+    let to $props, createEventDispatcher to callback props, and slot usage to snippets. Handle edge cases like $: statements
+    with side effects vs pure computations, destructured props with export let { x } = $props(), and comments preservation.
+    Include validation tests ensuring transformed code passes TypeScript strict mode and maintains original behavior.'
+- id: long_0006_exp_027
+  instruction: 'Migrate a map-based logistics tracking system from Svelte 4 to 5, integrating with external mapping libraries
+    (Mapbox/Leaflet). The challenge: external libraries mutate DOM directly and expect plain objects, not $state proxies.
+    Implement $state.raw for map coordinates and markers, use $effect for map instance lifecycle management (initialization,
+    style changes, layer updates), and handle the disconnect between Svelte''s reactivity and imperative map APIs. Include
+    geofencing calculations using $derived for efficient polygon intersection tests on vehicle location updates.'
+- id: long_0007_exp_000
+  instruction: 'Build a complete CI/CD pipeline for a Python FastAPI + React e-commerce application using AWS ECS and CodePipeline.
+    Include: multi-stage Dockerfiles for both services, docker-compose.yml for local development with hot reloading, AWS Copilot
+    configuration files, GitHub Actions workflow for running pytest and Jest tests, linting with black/eslint, building and
+    pushing to ECR with image scanning enabled, deploying to ECS Fargate with blue-green deployment strategy, RDS PostgreSQL
+    configuration with secrets management via AWS Secrets Manager, Application Load Balancer setup with path-based routing,
+    CloudWatch dashboards for monitoring, and cost optimization features using Fargate Spot for non-production workloads.'
+- id: long_0007_exp_001
+  instruction: 'Design a HIPAA-compliant CI/CD and Kubernetes deployment for a healthcare Node.js + Vue.js patient portal.
+    Include: hardened Dockerfiles with non-root users and vulnerability scanning, GitLab CI configuration with SAST/DAST security
+    scanning stages, Kubernetes manifests with Pod Security Standards (restricted), NetworkPolicies isolating microservices,
+    encrypted PVCs for PostgreSQL using LUKS, Helm charts with values for dev/staging/prod environments, automated database
+    migrations using Umzug as a Kubernetes Job with rollback capabilities, Ingress with cert-manager for TLS termination,
+    Prometheus monitoring with HIPAA audit logging alerts, and disaster recovery procedures with Velero backup schedules.'
+- id: long_0007_exp_002
+  instruction: 'Create a production-grade CI/CD setup for a Rust Actix-web + SvelteKit fintech trading platform. Include:
+    optimized multi-stage Dockerfiles using distroless images for minimal attack surface, GitHub Actions with matrix builds
+    for cross-platform compilation, container image signing with Cosign and Sigstore, deployment to Kubernetes using ArgoCD
+    with GitOps workflow, PostgreSQL StatefulSet with Patroni for high availability, Redis Cluster for session management,
+    Istio service mesh configuration with mTLS strict mode, canary deployment strategy using Flagger, custom metrics HPA based
+    on request latency, Grafana dashboards showing P95/P99 latencies, and Jaeger tracing integration for distributed debugging.'
+- id: long_0007_exp_003
+  instruction: 'Implement a CI/CD pipeline for a Java Spring Boot + Angular enterprise CRM system migrating from VMs to Kubernetes.
+    Include: Dockerfiles with Jib Maven plugin for optimized Java builds, docker-compose with profiles for local development,
+    GitHub Actions workflow with SonarQube code quality gates, OWASP dependency check, building Helm charts and pushing to
+    Chart Museum, Kubernetes manifests including ConfigMaps for externalized configuration, Secrets with SealedSecrets or
+    External Secrets Operator, Horizontal Pod Autoscaler based on CPU and custom business metrics, PodDisruptionBudgets for
+    zero-downtime deployments, NetworkPolicies restricting east-west traffic, and a runbook for manual rollback procedures.'
+- id: long_0007_exp_004
+  instruction: 'Build a cost-optimized CI/CD pipeline for a Go Gin + Next.js SaaS startup using GitHub Actions and DigitalOcean
+    Kubernetes. Include: multi-stage Dockerfiles with BuildKit cache mounts, docker-compose.yml with Watchtower for auto-updates
+    in dev, GitHub Actions workflow with parallel job execution, building multi-arch images (AMD64/ARM64), pushing to DigitalOcean
+    Container Registry with garbage collection policies, Kubernetes manifests using Kustomize for environment management,
+    PostgreSQL managed database connection pooling with PgBouncer, NGINX Ingress Controller with rate limiting, cert-manager
+    with Let''s Encrypt, Prometheus monitoring with cost allocation labels, and automated resource requests/limits tuning
+    based on VPA recommendations.'
+- id: long_0007_exp_005
+  instruction: 'Design a multi-region active-active CI/CD deployment for an Elixir Phoenix + LiveView real-time collaboration
+    tool. Include: Dockerfiles with proper Erlang VM tuning, GitHub Actions with environment protection rules requiring manual
+    approval for production, Kubernetes manifests deployed to EKS clusters in us-east-1 and eu-west-1, Global Accelerator
+    for traffic routing, PostgreSQL with cross-region read replicas and Bucardo for multi-master replication, Redis Global
+    Datastore for session sharing, Istio locality-based load balancing, automated failover testing scripts, Chaos Engineering
+    tests with Litmus, and Grafana dashboards showing inter-region latency and replication lag metrics.'
+- id: long_0007_exp_006
+  instruction: 'Create a serverless CI/CD pipeline for a .NET 8 Minimal API + Blazor Serverless application using AWS. Include:
+    Dockerfiles for Lambda container images, docker-compose for local Lambda emulation with SAM CLI, GitHub Actions workflow
+    with dotnet test and playwright E2E tests, deployment via AWS CDK with TypeScript, API Gateway with throttling and caching
+    configuration, DynamoDB with on-demand capacity, S3 static website hosting for Blazor WASM, CloudFront distribution with
+    WAF and geo-blocking, Lambda provisioned concurrency for cold start optimization, X-Ray tracing, and CloudWatch alarms
+    for error rate and latency SLOs.'
+- id: long_0007_exp_007
+  instruction: 'Build a GitOps-based deployment for a Ruby on Rails 7 + Hotwire + Stimulus healthcare appointment system.
+    Include: optimized Dockerfiles using jemalloc and YJIT, docker-compose with volume caching for gems/node_modules, GitLab
+    CI with parallel test execution using Knapsack Pro, container scanning with Trivy, deployment via Flux CD with automated
+    image updates, PostgreSQL CrunchyData Operator for automated backups and failover, Redis Sentinel for high availability,
+    Ingress with OAuth2 Proxy for authentication, NetworkPolicies preventing egress to unauthorized endpoints, Velero for
+    cluster backups, and New Relic APM integration with custom attributes for patient data anonymization.'
+- id: long_0007_exp_008
+  instruction: 'Implement a CI/CD pipeline for a PHP Laravel 11 + Inertia.js + Vue social media platform with high availability
+    requirements. Include: multi-stage Dockerfiles with PHP-FPM and NGINX separation, docker-compose with Horizon for queue
+    processing locally, GitHub Actions with PHPStan and Pest testing, building images and pushing to GitHub Container Registry
+    with vulnerability reports, Kubernetes manifests with Laravel-specific configurations (artisan cache clearing jobs), MySQL
+    Operator with group replication, Redis for caching and sessions, Meilisearch for search indexing, HPA with custom metrics
+    from queue length, PodDisruptionBudgets, and Litmus chaos experiments testing database failover scenarios.'
+- id: long_0007_exp_009
+  instruction: 'Design a CI/CD workflow for a Kotlin Ktor + React Native Web IoT fleet management dashboard. Include: Gradle-optimized
+    Dockerfiles with build cache, docker-compose with Mosquitto MQTT broker for local testing, GitHub Actions with Gradle
+    caching and Android SDK setup, detekt static analysis, deployment to GKE with Anthos Config Management, Cloud SQL Proxy
+    sidecars for secure database access, TimescaleDB for time-series telemetry data, InfluxDB for metrics, Grafana with IoT-specific
+    panels showing device connectivity status, automated canary analysis using Kayenta, and backup strategies for time-series
+    data with downsampling policies.'
+- id: long_0007_exp_010
+  instruction: 'Create a security-hardened CI/CD pipeline for a Python Django + HTMX government document processing system.
+    Include: Dockerfiles with distroless-python base images, docker-compose with ClamAV for virus scanning in dev, GitHub
+    Actions with bandit security linting and pip-audit for dependency checking, signing commits and images with GPG, deployment
+    to on-premise Kubernetes with Falco runtime security, Pod Security Policies (deprecated) or Pod Security Standards enforcing
+    read-only root filesystems, NetworkPolicies blocking external egress except to approved APIs, PostgreSQL with pgaudit
+    extension for compliance logging, OpenPolicyAgent Gatekeeper for admission control, and automated CVE scanning in CI with
+    fail thresholds.'
+- id: long_0007_exp_011
+  instruction: 'Build a CI/CD pipeline for a Rust Axum + Leptis WebAssembly educational platform. Include: multi-stage Dockerfiles
+    with cargo-chef for dependency caching, docker-compose with minio for S3-compatible storage locally, GitHub Actions with
+    cargo clippy, cargo audit for security, wasm-pack for WASM builds, deployment to Kubernetes with WASM runtime (WasmEdge
+    or Wasmtime), SQLite with Litestream for replication to S3, Traefik Ingress with middleware for compression, Prometheus
+    metrics exposition in Rust using metrics crate, Grafana alerts for error rates, and automated dependency updates with
+    Dependabot and Renovate configuration.'
+- id: long_0007_exp_012
+  instruction: 'Design a disaster-recovery-focused CI/CD for a Java Micronaut + Angular banking core system. Include: Dockerfiles
+    with GraalVM native image compilation for fast startup, docker-compose with Confluent Kafka for event sourcing locally,
+    GitHub Actions with Checkstyle and SpotBugs, deployment to Kubernetes with Velero for cluster backups, PostgreSQL with
+    continuous archiving to S3 using WAL-G, multi-availability zone deployment with anti-affinity rules, automated backup
+    testing jobs that restore to staging, RPO/RTO monitoring dashboards, runbooks for regional failover, and Chaos Monkey
+    tests that randomly terminate pods to validate resilience.'
+- id: long_0007_exp_013
+  instruction: 'Implement a CI/CD pipeline for a Node.js NestJS + GraphQL + React video streaming platform. Include: Dockerfiles
+    with PM2 for process management in production, docker-compose with MinIO for video storage locally, GitHub Actions with
+    ESLint and Jest integration tests, building images with ffmpeg bundled for transcoding, deployment to Kubernetes with
+    GPU node affinity for transcoding workloads, Ceph RBD for shared storage, NGINX Ingress with streaming optimizations,
+    Prometheus monitoring with custom metrics for concurrent streams, Grafana dashboards showing bitrate and buffering metrics,
+    and automated SSL certificate rotation with cert-manager.'
+- id: long_0007_exp_014
+  instruction: 'Create a CI/CD setup for a Python Quart + React async cryptocurrency exchange. Include: optimized Dockerfiles
+    with uvloop for better async performance, docker-compose with Redis Cluster for rate limiting, GitHub Actions with mypy
+    strict type checking and pytest-asyncio, deployment to Kubernetes with WebSocket load balancing using NGINX with sticky
+    sessions, TimescaleDB for tick data, automated database migrations with Alembic as Jobs, PodDisruptionBudgets ensuring
+    minimum replicas during deployments, NetworkPolicies isolating the trading engine from public access, Falco rules detecting
+    anomalous container behavior, and Prometheus alertmanager configuration for high-value transaction monitoring.'
+- id: long_0007_exp_015
+  instruction: 'Build a CI/CD pipeline for a C# .NET MAUI Blazor Hybrid + ASP.NET Core logistics tracking system. Include:
+    Dockerfiles for the backend API with multi-arch support, docker-compose with RabbitMQ for message queuing, GitHub Actions
+    with MSBuild for mobile builds and App Center integration, Kubernetes manifests with SignalR for real-time tracking updates,
+    SQL Server Linux containers with persistent volumes, Redis for distributed caching, HPA based on SignalR connection count,
+    Ingress with sticky sessions for WebSocket support, Prometheus metrics for message queue depth, and automated UI tests
+    using Playwright in CI.'
+- id: long_0007_exp_016
+  instruction: 'Design a CI/CD workflow for a Scala Play Framework + Vue.js 3 scientific computing platform. Include: Dockerfiles
+    with sbt stage optimization and Alpine base, docker-compose with Jupyter notebooks integration, GitHub Actions with scalafmt
+    and scalastyle, deployment to Kubernetes with Spark Operator for data processing jobs, Cassandra for time-series data
+    storage, custom resource definitions for batch jobs, monitoring with Prometheus and Grafana showing cluster resource utilization
+    for Spark executors, and automated security scanning with Snyk for Scala dependencies.'
+- id: long_0007_exp_017
+  instruction: 'Implement a CI/CD pipeline for a TypeScript Express + Remix runbook automation platform. Include: Dockerfiles
+    with pnpm for efficient package management, docker-compose with MongoDB and Redis, GitHub Actions with TypeScript strict
+    checking and Playwright E2E tests, deployment to Kubernetes with Argo Workflows integration for runbook execution, MongoDB
+    Community Operator with backup sidecars, NetworkPolicies restricting database access to specific service accounts, Secrets
+    rotation using External Secrets Operator with AWS Secrets Manager, Prometheus blackbox exporter for endpoint monitoring,
+    and Grafana OnCall integration for alert routing.'
+- id: long_0007_exp_018
+  instruction: 'Create a CI/CD setup for a Java Quarkus + React image recognition service using Knative. Include: native compilation
+    Dockerfiles with Mandrel, docker-compose with localstack for AWS services emulation, GitHub Actions with Quarkus continuous
+    testing, deployment to Kubernetes with Knative Serving for scale-to-zero, Kafka for event-driven image processing, MinIO
+    for object storage, KNative Eventing for trigger-based processing, custom metrics for inference latency, and Kiali for
+    observability of service mesh traffic flows if Istio is enabled.'
+- id: long_0007_exp_019
+  instruction: 'Build a CI/CD pipeline for a Python Falcon + Svelte real-time auction system. Include: Dockerfiles with gunicorn
+    and gevent for WebSocket support, docker-compose with Elasticsearch for auction search, GitHub Actions with pylint and
+    safety checks, deployment to Kubernetes with Socket.IO load balancing using Redis adapter, PostgreSQL with logical replication
+    for read replicas, custom horizontal pod autoscaler based on active auction count, Circuit Breaker patterns implemented
+    with Istio, Prometheus alerts for bidding latency spikes, and automated chaos tests simulating network partitions between
+    bidders.'
+- id: long_0007_exp_020
+  instruction: 'Design a CI/CD workflow for a Go Echo + Angular insurance claim processing system with strict audit requirements.
+    Include: Dockerfiles with scratch base images for minimal footprint, docker-compose with Vault for secret management in
+    dev, GitHub Actions with golangci-lint and govulncheck, deployment to Kubernetes with immutable infrastructure patterns,
+    CockroachDB for distributed SQL with geo-partitioning, audit logging sidecars forwarding to Splunk, OPA Gatekeeper policies
+    enforcing resource limits and allowed repositories, Falco rules detecting privilege escalations, and automated compliance
+    reports generated as CI artifacts.'
+- id: long_0007_exp_021
+  instruction: 'Implement a CI/CD pipeline for a Rust Tonic (gRPC) + SvelteKit microservices communication platform. Include:
+    Dockerfiles with cargo-build for gRPC server binaries, docker-compose with Envoy proxy for local testing, GitHub Actions
+    with cargo-outdated and protobuf linting, deployment to Kubernetes with Linkerd service mesh for mTLS and retries, etcd
+    for service discovery, custom controllers for CRD management, Prometheus monitoring of gRPC specific metrics (error codes,
+    latency by method), and distributed tracing with Jaeger showing cross-service gRPC calls.'
+- id: long_0007_exp_022
+  instruction: 'Create a CI/CD setup for a Python Sanic + Vue.js high-frequency trading data visualization tool. Include:
+    Dockerfiles with uvicorn and uvloop optimizations, docker-compose with InfluxDB for tick data, GitHub Actions with bandit
+    and pydantic model validation tests, deployment to Kubernetes with anti-affinity rules spreading pods across nodes, ClickHouse
+    for columnar analytics queries, Redis Streams for data ingestion, custom metrics exporters for trading volume, Grafana
+    dashboards with real-time websocket updates, and network policies ensuring the data ingestion path is isolated from public
+    ingress.'
+- id: long_0007_exp_023
+  instruction: 'Build a CI/CD pipeline for a Kotlin Spring WebFlux + React Native Web telemedicine platform. Include: Dockerfiles
+    with layered jars for Spring Boot, docker-compose with WebRTC signaling server locally, GitHub Actions with ktlint and
+    detekt, deployment to Kubernetes with Twilio/Vonage API integration secrets, MongoDB for patient records with encryption
+    at rest, Redis for session storage with Sentinel, HPA based on WebSocket connection metrics, Ingress with CORS configured
+    for mobile app origins, Prometheus alerts for consultation start failures, and automated backup testing to ensure PHI
+    recovery capabilities.'
+- id: long_0007_exp_024
+  instruction: 'Design a CI/CD workflow for a Node.js Hapi + Angular legacy enterprise migration to Kubernetes. Include: Dockerfiles
+    with Node.js LTS and security patches, docker-compose with legacy Oracle database links, GitHub Actions with npm audit
+    and retire.js for vulnerability scanning, Kubernetes manifests with init containers for database schema migrations, external
+    secrets for legacy API keys, readiness probes checking downstream dependencies, PodDisruptionBudgets respecting maintenance
+    windows, cost allocation tags for showback reporting, and gradual traffic shifting from VMs to K8s using NGINX weight-based
+    routing.'
+- id: long_0007_exp_025
+  instruction: 'Implement a CI/CD pipeline for a Swift Vapor + React server-side rendered e-learning platform. Include: Dockerfiles
+    with Swift 5.9 and swift-format, docker-compose with PostgreSQL and SwiftNIO optimizations, GitHub Actions with swift
+    test and code coverage reporting, deployment to Kubernetes with Swift Metrics integration for Prometheus, S3-compatible
+    storage for course videos, CDN integration with cache invalidation webhooks, custom resource definitions for course content
+    batch processing, and Grafana dashboards showing video streaming performance metrics.'
+- id: long_0007_exp_026
+  instruction: 'Create a CI/CD setup for a Python Starlette + HTMX serverless edge deployment using Cloudflare Workers. Include:
+    Dockerfiles for wrangler CLI tooling, docker-compose with Miniflare for local testing, GitHub Actions with pytest and
+    mypy, deployment via Wrangler to Cloudflare Workers with D1 database bindings, KV namespace for caching, R2 object storage
+    for files, GitHub Actions secrets for API tokens, automated rollback on error rate thresholds, and monitoring using Cloudflare
+    Analytics API with custom dashboards showing edge cache hit ratios.'
+- id: long_0007_exp_027
+  instruction: 'Build a CI/CD pipeline for a Java Vert.x + Vue.js event-driven IoT gateway. Include: Dockerfiles with Vert.x
+    clustered mode configuration, docker-compose with Mosquitto and HiveMQ for MQTT testing, GitHub Actions with Maven dependency
+    caching and Vert.x unit tests, deployment to Kubernetes with Infinispan for distributed event bus, Hazelcast for clustered
+    session management, custom metrics for MQTT message throughput, NetworkPolicies allowing MQTT port access only from IoT
+    subnet ranges, and Prometheus alerts for device offline events exceeding thresholds.'
+- id: long_0007_exp_028
+  instruction: 'Design a CI/CD workflow for a Python Pyramid + React federal compliance document management system. Include:
+    Dockerfiles with security contexts and read-only filesystems, docker-compose with Alfresco CMS integration, GitHub Actions
+    with bandit, safety, and OWASP ZAP scanning, deployment to Kubernetes with OpenShift-specific security context constraints,
+    PostgreSQL with TDE (Transparent Data Encryption), automated STIG compliance checking with OpenSCAP, audit logging to
+    Splunk with CIM compliance, and NetworkPolicies enforcing data classification levels (secret, confidential, public).'
+- id: long_0007_exp_029
+  instruction: 'Implement a CI/CD pipeline for a Ruby Sinatra + Preact lightweight marketing site with heavy caching. Include:
+    Dockerfiles with multi-stage builds separating asset compilation, docker-compose with Varnish cache layer, GitHub Actions
+    with RuboCop and HTML validation, deployment to Kubernetes with NGINX caching proxy, Redis for page caching, static site
+    generation with Sinatra exporting to S3/CloudFront, Lambda@Edge for image optimization, cost monitoring with Kubecost
+    integration, and automated Lighthouse CI performance testing in the pipeline with budget enforcement.'
+- id: long_0008_exp_000
+  instruction: 'Implement a Giraffe HTTP handler for a public library system that retrieves book details by ISBN.
+
+    The handler should validate the ISBN format (13 digits) using the `route` and `routef` combinators,
+
+    return a JSON response for valid requests, and return a 404 status with a custom error message for invalid ISBN formats.
+
+    Include proper error handling for database connection failures.'
+- id: long_0008_exp_001
+  instruction: 'Refactor an existing imperative ASP.NET Core middleware that processes e-commerce shopping cart updates
+
+    into a functional Giraffe pipeline using the `>=>` (fish) operator. The original code uses mutable state
+
+    and nested if-else blocks. Transform it into a composition of pure `HttpHandler` functions that handle
+
+    cart validation, inventory checks, and price calculation as separate, composable steps.'
+- id: long_0008_exp_002
+  instruction: 'Design a comprehensive error handling strategy for a HIPAA-compliant healthcare API using Giraffe.
+
+    The system must catch unhandled exceptions, log PHI (Protected Health Information) securely without
+
+    exposing it in responses, and return appropriate HTTP status codes. Include a custom `HttpHandler`
+
+    that wraps the entire pipeline to ensure no sensitive data leaks in error responses.'
+- id: long_0008_exp_003
+  instruction: 'Debug a Giraffe routing issue in an IoT sensor data ingestion service where the `choose` combinator
+
+    is incorrectly matching routes, causing temperature sensor POST requests to be handled by the humidity
+
+    sensor handler. Analyze the route patterns and fix the precedence and specificity issues in the route definitions.'
+- id: long_0008_exp_004
+  instruction: 'Explain the functional differences between the `>=>` (compose) operator and the `choose` combinator
+
+    in Giraffe''s pipeline architecture. Provide concrete code examples showing when to use sequential
+
+    composition versus branching logic, and demonstrate how `None` values propagate differently through each.'
+- id: long_0008_exp_005
+  instruction: 'Implement a custom model binder for a financial trading platform that handles high-precision decimal
+
+    values for cryptocurrency transactions. The binder must parse query strings into a `TransactionRequest`
+
+    record, validate that amounts are positive, and ensure currency codes are ISO 4217 compliant before
+
+    passing to the handler. Include unit tests for edge cases like scientific notation inputs.'
+- id: long_0008_exp_006
+  instruction: 'Create a file upload handler for a medical imaging service that accepts DICOM files. The handler must
+
+    validate file extensions, check MIME types, enforce a 500MB size limit, and stream the upload directly
+
+    to Azure Blob Storage without loading the entire file into memory. Return appropriate error responses
+
+    for each validation failure type.'
+- id: long_0008_exp_007
+  instruction: 'Design an authentication and authorization pipeline for a fintech banking API using Giraffe. Implement
+
+    JWT token validation, role-based access control (RBAC) for admin vs. customer endpoints, and refresh
+
+    token rotation. The solution must integrate with ASP.NET Core''s authentication middleware while
+
+    maintaining pure functional composition in the Giraffe handlers.'
+- id: long_0008_exp_008
+  instruction: 'Optimize a slow-performing social media feed aggregation endpoint by applying the `warbler` combinator
+
+    to prevent redundant database queries. Refactor the handler to use lazy evaluation for expensive
+
+    user profile lookups and implement response caching with ETag generation for feed data that changes infrequently.'
+- id: long_0008_exp_009
+  instruction: 'Build a RESTful API endpoint for a weather station network that accepts GET requests with query parameters
+
+    for latitude, longitude, and date range. Use Giraffe''s `bindQueryString` function to model bind the parameters,
+
+    validate that dates are not in the future, and return JSON weather data. Include proper handling for
+
+    missing or malformed query parameters.'
+- id: long_0008_exp_010
+  instruction: 'Debug a memory leak in a video streaming platform''s Giraffe handler that uses `System.IO.Pipelines`.
+
+    The handler streams large video files but fails to dispose of `FileStream` resources properly under high concurrency.
+
+    Identify the resource management issue and refactor using `use` bindings and proper `IAsyncEnumerable` implementation.'
+- id: long_0008_exp_011
+  instruction: 'Implement content negotiation for an enterprise ERP system that must support both JSON and XML responses
+
+    based on the `Accept` header. Create a custom `HttpHandler` that detects the requested format, serializes
+
+    the response accordingly using Giraffe''s serialization helpers, and defaults to JSON when no preference is specified.'
+- id: long_0008_exp_012
+  instruction: 'Create a safe URL redirection handler for a link shortening service that prevents open redirect vulnerabilities.
+
+    The handler must validate that redirect targets are within an allowlist of domains, reject javascript: protocol URLs,
+
+    and log all redirect attempts for security auditing. Return 400 Bad Request for invalid targets.'
+- id: long_0008_exp_013
+  instruction: 'Design a high-throughput order processing system for a cryptocurrency exchange using Giraffe that handles
+
+    10,000 concurrent requests. Implement request deduplication using idempotency keys, rate limiting per API key,
+
+    and circuit breaker patterns for downstream services. Use async workflows and ensure thread-safe access to shared state.'
+- id: long_0008_exp_014
+  instruction: 'Explain how the `HttpFuncResult` type (`Task<HttpContext option>`) enables railway-oriented programming
+
+    in Giraffe. Describe the difference between returning `Some ctx`, `None`, and throwing exceptions,
+
+    and how these behaviors interact with the ASP.NET Core middleware pipeline when a Giraffe handler declines a request.'
+- id: long_0008_exp_015
+  instruction: 'Debug a failing CSRF protection implementation in a banking portal''s Giraffe form submission handler.
+
+    The anti-forgery token validation is returning false positives due to incorrect header name configuration
+
+    and mismatched token sources between AJAX requests and form posts. Fix the token extraction logic.'
+- id: long_0008_exp_016
+  instruction: 'Architect a microservices gateway using Giraffe for a smart city IoT platform that aggregates data from
+
+    traffic sensors, air quality monitors, and public transit systems. Design the routing strategy to handle
+
+    service discovery, implement timeout and retry policies for downstream calls, and create a unified
+
+    authentication layer that validates device certificates before processing sensor data.'
+- id: long_0008_exp_017
+  instruction: 'Implement a custom error handling middleware in Giraffe for a blogging platform that distinguishes between
+
+    404 (Not Found) for missing blog posts, 400 (Bad Request) for invalid slugs, and 500 (Internal Server Error)
+
+    for database failures. Create a consistent error response format with error codes, messages, and trace IDs
+
+    for debugging purposes.'
+- id: long_0008_exp_018
+  instruction: 'Refactor a legacy Giraffe application from traditional `route`/`routef` based routing to the newer
+
+    Endpoint Routing system introduced in recent versions. Ensure backward compatibility for existing URL patterns,
+
+    migrate handler registrations to `MapGet`/`MapPost` style endpoints, and maintain the functional composition
+
+    pattern using the `IEndpointConventionBuilder` extensions.'
+- id: long_0008_exp_019
+  instruction: 'Implement response caching with ETag generation for a news aggregation API. The handler should generate
+
+    strong ETags based on content hash, respect `If-None-Match` headers to return 304 Not Modified responses,
+
+    and include `Cache-Control` directives for CDN optimization. Handle cache invalidation when articles are updated.'
+- id: long_0008_exp_020
+  instruction: 'Build a flight search API endpoint that parses complex query strings with multiple optional parameters
+
+    (origin, destination, dates, passengers, cabin class). Use Giraffe''s model binding to construct a search
+
+    criteria record, validate that return dates are after departure dates, and handle timezone conversions
+
+    for international airports.'
+- id: long_0008_exp_021
+  instruction: 'Explain the semantic difference between returning `None` from an `HttpHandler` versus returning `Some ctx`
+
+    with a 404 status code. Provide scenarios where each approach is appropriate, particularly when integrating
+
+    Giraffe with other ASP.NET Core middleware like StaticFileMiddleware or exception handling middleware.'
+- id: long_0008_exp_022
+  instruction: 'Debug a race condition in a real-time bidding platform where concurrent database updates within a Giraffe
+
+    handler are causing lost updates to bid amounts. The handler uses async workflows but lacks proper
+
+    isolation. Implement optimistic concurrency control using row versioning and proper transaction scoping.'
+- id: long_0008_exp_023
+  instruction: 'Design an API versioning strategy for a SaaS platform that maintains backward compatibility while introducing
+
+    breaking changes in v2. Use Giraffe pipelines to route requests to different handler implementations
+
+    based on URL path prefixes or custom headers, ensuring v1 clients continue to work while v2 clients get new features.'
+- id: long_0008_exp_024
+  instruction: 'Implement a distributed logging middleware for a microservices architecture that adds correlation IDs to
+
+    every Giraffe request. The handler should extract or generate a `X-Correlation-ID` header, propagate it to
+
+    downstream HTTP calls, and include it in all log entries using ASP.NET Core''s `ILogger` scopes.'
+- id: long_0008_exp_025
+  instruction: 'Create a type-safe HTML view generation system using the Giraffe View Engine for an administrative dashboard.
+
+    Define reusable view components for data tables, pagination controls, and form inputs. Implement a master
+
+    page layout handler that composes these components and handles CSRF token injection for all forms.'
+- id: long_0008_exp_026
+  instruction: 'Refactor an inventory management handler that uses mutable `Dictionary` objects for caching product stock
+    levels.
+
+    Replace the mutation with immutable Map operations and pure functions, ensuring thread safety without locks
+
+    and making the handler easily testable by removing external state dependencies.'
+- id: long_0008_exp_027
+  instruction: 'Build a health check endpoint for a microservices deployment that reports the status of dependent services
+
+    (database, message queue, external APIs). Use Giraffe''s `choose` combinator to create a `/health/live` endpoint
+
+    for Kubernetes liveness probes and a `/health/ready` endpoint that checks all dependencies before returning 200 OK.'
+- id: long_0008_exp_028
+  instruction: 'Design a secure document download system for a legal document vault that enforces fine-grained authorization.
+
+    The Giraffe handler must verify JWT claims for document access rights, check document classification levels,
+
+    stream the file from secure storage with content disposition headers, and audit all download attempts
+
+    including partial content (range request) support for large PDFs.'
+- id: long_0008_exp_029
+  instruction: 'Debug a silent failure in a payment gateway integration where JSON deserialization of webhook payloads
+
+    is failing due to case-sensitive property matching and missing required fields. The Giraffe handler
+
+    returns 200 OK before validation completes, causing the payment processor to retry. Implement proper
+
+    model validation that returns 400 with detailed error messages before acknowledging the webhook.'
+- id: long_0009_exp_000
+  instruction: Implement a HIPAA-compliant patient records API using Giraffe with phantom type safety for PatientId<'T> and
+    ProviderId<'T>. Create middleware that validates JWT scopes for PHI access before the request reaches handlers. Include
+    audit logging that captures every read/write operation with immutable log entries. Handle edge cases where de-identified
+    data requests bypass certain validation steps while maintaining an audit trail.
+- id: long_0009_exp_001
+  instruction: Build a real-time payment processing gateway using Giraffe's HttpHandler composition (>=> operator) with railway-oriented
+    error handling. Implement idempotency key validation middleware that checks Redis for duplicate requests within a 24-hour
+    window. Create saga orchestration handlers for distributed transactions across multiple banking APIs, with compensating
+    actions for rollback scenarios. Include circuit breaker patterns for external service failures.
+- id: long_0009_exp_002
+  instruction: Design an IoT telemetry ingestion service handling 10,000+ devices using Giraffe's streaming capabilities.
+    Implement chunked transfer encoding for high-volume time-series data ingestion. Create middleware that validates device
+    certificates against a PostgreSQL registry before allowing data writes. Handle backpressure scenarios where device burst
+    traffic exceeds processing capacity, implementing graceful degradation with 429 status codes.
+- id: long_0009_exp_003
+  instruction: Develop an e-commerce inventory management system with optimistic concurrency control. Implement HttpHandlers
+    that use ETags for conflict detection when multiple users attempt to purchase the same limited-stock item simultaneously.
+    Create a distributed caching layer with Redis for hot product data, including cache invalidation webhooks. Handle race
+    conditions with automatic retry logic using the warbler combinator.
+- id: long_0009_exp_004
+  instruction: Construct a real-time collaborative document editor using Giraffe with SignalR integration. Implement operational
+    transformation (OT) algorithms in F# handlers to resolve concurrent editing conflicts. Create presence tracking middleware
+    that maintains WebSocket connection state per user. Handle reconnection scenarios with missed operation replay and cursor
+    synchronization.
+- id: long_0009_exp_005
+  instruction: Refactor a legacy ASP.NET Core MVC application to use Giraffe's functional pipeline. Convert controller actions
+    with dependency injection into pure HttpHandler compositions using the fish operator (>=>). Maintain backward compatibility
+    with existing route patterns while introducing type-safe model binding. Include migration strategies for existing action
+    filters converted to middleware.
+- id: long_0009_exp_006
+  instruction: Debug and fix a memory leak in a production Giraffe application caused by improper disposal of HttpClient instances
+    within async HttpHandler workflows. Create diagnostic middleware that tracks object lifetimes and logs warnings for undisposed
+    resources. Implement a connection pooling solution using IHttpClientFactory integration with F# async workflows.
+- id: long_0009_exp_007
+  instruction: Implement a content negotiation middleware that automatically selects between JSON, XML, and MessagePack serialization
+    based on Accept headers. Create custom HttpHandlers for medical imaging (DICOM) that stream binary data efficiently without
+    loading entire files into memory. Handle client preferences for compressed vs uncompressed responses with Brotli/Gzip
+    middleware.
+- id: long_0009_exp_008
+  instruction: Build a GDPR-compliant data portability API using Giraffe that generates downloadable archives of user data.
+    Implement streaming JSON generation for large datasets to avoid memory issues. Create async background jobs using IHostedService
+    for data deletion requests with progress tracking endpoints. Include validation that prevents deletion of data under legal
+    hold.
+- id: long_0009_exp_009
+  instruction: Design a webhook delivery system with exponential backoff and dead letter queues. Create HttpHandlers that
+    manage webhook subscriptions with HMAC signature verification. Implement retry logic using Giraffe's task computation
+    expressions with configurable retry policies. Handle endpoint failures with automatic disabling after consecutive failures
+    and alerting.
+- id: long_0009_exp_010
+  instruction: Develop a multi-tenant SaaS authentication service using Giraffe that supports both SAML 2.0 and OpenID Connect.
+    Create middleware for tenant resolution from custom domains that routes to appropriate identity providers. Implement PKCE
+    flow for mobile applications with secure token storage. Handle session fixation attacks with rotating session IDs post-authentication.
+- id: long_0009_exp_011
+  instruction: Implement a property-based testing suite for Giraffe API endpoints using FsCheck. Create generators for HttpContext
+    objects with various header combinations and body payloads. Test that compositional properties hold (e.g., handler1 >=>
+    handler2 should maintain associativity). Include stateful testing for sequences of API calls that modify shared resources.
+- id: long_0009_exp_012
+  instruction: Build an OpenTelemetry integration for distributed tracing in a microservices architecture using Giraffe. Create
+    middleware that extracts trace context from incoming requests and propagates to downstream services. Implement custom
+    span creation for database queries and external HTTP calls. Handle baggage item propagation for tenant identification
+    across service boundaries.
+- id: long_0009_exp_013
+  instruction: Create an image processing pipeline using Giraffe that generates responsive thumbnails on-demand. Implement
+    middleware for EXIF data stripping to remove GPS coordinates and camera metadata for privacy. Use the Giraffe View Engine
+    to generate dynamic HTML image galleries with lazy loading. Handle memory pressure with streaming processing and automatic
+    cleanup.
+- id: long_0009_exp_014
+  instruction: Design a rate limiting middleware using the token bucket algorithm with Redis backing store. Implement different
+    tiers (free, pro, enterprise) with varying limits based on JWT claims. Create sliding window counters that accurately
+    track request rates without thundering herd problems. Handle distributed rate limiting across multiple API gateway instances.
+- id: long_0009_exp_015
+  instruction: Build a GraphQL endpoint using Giraffe (not REST) with schema stitching from multiple microservices. Implement
+    query complexity analysis to prevent expensive queries from overwhelming the database. Create DataLoader patterns for
+    N+1 query elimination using F# async workflows. Handle subscriptions with WebSocket transport and backpressure management.
+- id: long_0009_exp_016
+  instruction: Implement a zero-downtime database migration strategy for PostgreSQL using Giraffe. Create health check endpoints
+    that verify database connectivity and migration status before marking instances as ready. Implement expand/contract pattern
+    handlers that support both old and new schema versions simultaneously during transition periods.
+- id: long_0009_exp_017
+  instruction: Develop a server-sent events (SSE) endpoint for real-time notifications using Giraffe's async workflows. Implement
+    connection management that handles browser reconnections with Last-Event-ID headers. Create a pub/sub integration with
+    Redis for broadcasting messages across multiple server instances. Handle client disconnections gracefully without throwing
+    exceptions.
+- id: long_0009_exp_018
+  instruction: Build a CSV/Excel import processing API with streaming validation using Giraffe. Implement progress tracking
+    that returns 202 Accepted with polling URLs for large file processing. Create validation middleware that checks file signatures
+    (magic numbers) before processing to prevent upload of executable files. Handle encoding detection for international character
+    sets.
+- id: long_0009_exp_019
+  instruction: Implement a feature flag system using Giraffe middleware with LaunchDarkly or custom storage. Create targeting
+    rules based on user attributes, gradual rollouts with percentage-based activation, and A/B testing capabilities. Handle
+    feature flag evaluation caching with TTL to reduce latency. Include emergency kill switches that disable features immediately.
+- id: long_0009_exp_020
+  instruction: Design a BFF (Backend for Frontend) pattern for mobile applications using Giraffe. Implement response aggregation
+    that combines multiple microservice calls into single mobile-optimized payloads. Create field selection middleware that
+    filters JSON responses based on client-specified fields to reduce bandwidth. Handle offline sync support with conflict
+    resolution endpoints.
+- id: long_0009_exp_021
+  instruction: Build a blockchain wallet integration service using Giraffe that handles Ethereum transactions. Implement middleware
+    for nonce management and gas price estimation. Create handlers for transaction signing with Hardware Security Module (HSM)
+    integration. Handle pending transaction monitoring with webhook callbacks on confirmation.
+- id: long_0009_exp_022
+  instruction: Implement a full-text search API using Elasticsearch with Giraffe model binding for complex query DSLs. Create
+    faceted search handlers that return aggregation counts for filters. Implement query parsing middleware that converts user-friendly
+    search syntax to Elasticsearch queries. Handle highlighting of search results with snippet generation.
+- id: long_0009_exp_023
+  instruction: Develop a geospatial tracking service for fleet management using Giraffe with PostGIS. Implement route optimization
+    handlers that calculate shortest paths with real-time traffic considerations. Create geofencing middleware that triggers
+    alerts when vehicles enter/exit defined polygons. Handle coordinate system transformations between GPS (WGS84) and local
+    grid systems.
+- id: long_0009_exp_024
+  instruction: Build a video streaming API using Giraffe with support for HTTP range requests and adaptive bitrate selection.
+    Implement middleware for DRM (Widevine/FairPlay) license validation. Create playlist generation handlers for HLS/DASH
+    streaming protocols. Handle concurrent viewer limits with token-based access control and session validation.
+- id: long_0009_exp_025
+  instruction: Implement a saga pattern for distributed transactions using Giraffe with event sourcing. Create compensating
+    action handlers for rollback scenarios in hotel booking systems (cancel reservation, refund payment). Implement idempotent
+    saga execution with duplicate event detection. Handle partial failure recovery with manual intervention endpoints.
+- id: long_0009_exp_026
+  instruction: Design a configuration management API using Giraffe with environment-specific overrides and secret rotation.
+    Implement middleware that decrypts configuration values using Azure Key Vault or AWS Secrets Manager. Create validation
+    handlers that ensure required configuration exists before application startup. Handle hot configuration reloads without
+    application restarts.
+- id: long_0009_exp_027
+  instruction: Build a natural language processing API using ML.NET with Giraffe endpoints. Implement model versioning handlers
+    that allow A/B testing between different model versions. Create batch inference endpoints for processing large datasets
+    asynchronously with queue-based processing. Handle model drift detection with automatic retraining triggers.
+- id: long_0009_exp_028
+  instruction: Implement a service mesh integration for mTLS communication between F# microservices using Giraffe. Create
+    client certificate validation middleware with SPIFFE/SPIRE integration. Implement request mirroring for shadow traffic
+    testing of new service versions. Handle certificate rotation without dropping existing connections.
+- id: long_0009_exp_029
+  instruction: Develop a comprehensive health check and observability endpoint using Giraffe that aggregates status from databases,
+    message queues, and external APIs. Implement deep health checks vs shallow health checks with timeout handling. Create
+    custom metrics endpoints for Prometheus scraping with application-specific business metrics (orders processed, users active).
+- id: long_0010_exp_000
+  instruction: 'Implement a basic `Result<''T, ''E>` type from scratch in F# with `map`, `bind`, and `mapError` functions.
+
+    Include type signatures, unit tests demonstrating the functor and monad laws, and a simple example
+
+    parsing integers from strings. Target F# beginners with clear comments explaining railway-oriented
+
+    programming concepts.'
+- id: long_0010_exp_001
+  instruction: 'Design a patient intake validation system for a healthcare application using railway-oriented programming.
+
+    Create validation rules for: insurance ID format (regex), age constraints (must be > 0 and < 150),
+
+    required allergies list (non-empty), and duplicate check (async database lookup). Use `Validation`
+
+    applicative style to accumulate all errors rather than fail fast. Include the `Validation` CE
+
+    implementation and a sample form with 5 fields showing error accumulation.'
+- id: long_0010_exp_002
+  instruction: 'Build a financial transaction processing module using `AsyncResult` that implements automatic rollback
+
+    compensation. When a multi-step transfer fails (validation → debit → credit → notification), ensure
+
+    previous steps are compensated (money returned, audit log updated). Handle concurrency with timeouts
+
+    and idempotency keys. Include retry logic with exponential backoff for transient failures.'
+- id: long_0010_exp_003
+  instruction: 'Refactor a legacy F# codebase containing deeply nested `match` expressions (4+ levels deep) handling
+
+    user authentication. Convert to `asyncResult` computation expressions using `requireSome`,
+
+    `requireTrue`, and `mapError`. Show before/after code with explanation of how railway-oriented
+
+    programming improves readability and error propagation.'
+- id: long_0010_exp_004
+  instruction: 'Create an IoT sensor data validation pipeline that processes temperature, humidity, and pressure
+
+    readings from MQTT messages. Handle malformed JSON, out-of-range values, and sensor offline states.
+
+    Use `Result` composition to filter valid readings and `AsyncResult` for cloud storage with circuit
+
+    breaker pattern. Include batch processing with `traverse` for handling 1000+ messages/sec.'
+- id: long_0010_exp_005
+  instruction: 'Implement an e-commerce checkout flow using `TaskResult` for .NET 6+. Steps: validate cart items
+
+    (stock check), apply discount codes (async), calculate taxes (external API), process payment
+
+    (idempotent), and send confirmation email. Ensure database transactions rollback on any failure.
+
+    Include middleware integration for ASP.NET Core that converts `Result` types to HTTP responses.'
+- id: long_0010_exp_006
+  instruction: 'Design a custom computation expression builder for `Result<''T, ''E>` that includes telemetry hooks.
+
+    Before/after each `let!` binding, log execution time and error rates to Prometheus. Support
+
+    custom operations for `tee` (side effects) and `ensure` (preconditions). Include source code for the
+
+    builder with `Bind`, `Return`, `Combine`, and `Delay` methods with performance benchmarks.'
+- id: long_0010_exp_007
+  instruction: 'Write a comparative analysis document showing the migration path from exception-based error handling
+
+    to railway-oriented programming in an F# codebase. Include performance metrics (stack trace costs vs
+
+    Result allocation), stack trace preservation techniques, and interop strategies with C# libraries
+
+    that throw exceptions. Provide a decision matrix for when to use exceptions vs Results.'
+- id: long_0010_exp_008
+  instruction: 'Debug and fix a memory leak in an `AsyncResult.sequence` implementation processing large datasets
+
+    (1M+ items). The current implementation uses `Async.Parallel` without backpressure causing OOM
+
+    exceptions. Provide a streaming solution using `IAsyncEnumerable` and `TaskResult` with bounded
+
+    concurrency (max 100 parallel operations). Include memory profiling results before/after.'
+- id: long_0010_exp_009
+  instruction: 'Implement a secure password validation pipeline resistant to timing attacks. Use `Result` to chain
+
+    validations: length (min 12), complexity (3 of 4 character types), common password check (async
+
+    against Have I Been Pwned API), and entropy calculation. Ensure constant-time comparison operations
+
+    and constant-time error paths to prevent oracles. Include property-based tests with FsCheck.'
+- id: long_0010_exp_010
+  instruction: 'Build a content moderation pipeline for a social media platform using `Validation` applicative
+
+    functors. Parallel checks: profanity filter (local), image safety ML API (async), spam detection
+
+    (async), and user reputation check (cache). Accumulate all violation types. Use `TaskResult` for
+
+    async portions and `Result` for sync. Include rate limiting and fallback strategies for ML API downtime.'
+- id: long_0010_exp_011
+  instruction: 'Create a utility module converting between `Option` and `Result` types with custom error messages.
+
+    Functions: `Option.toResult` (with error factory), `Result.toOption` (losing error info),
+
+    `Option.toResultWith` (lazy error evaluation), and `Result.requireSome`/`Result.requireNone`.
+
+    Include practical examples with database nullable columns and configuration settings.'
+- id: long_0010_exp_012
+  instruction: 'Optimize the `traverse` function for `Result` types to handle large lists (10k+ elements) with
+
+    tail recursion and minimal allocations. Compare performance against naive recursive implementation
+
+    and `List.map` followed by `sequence`. Benchmark against `Array` and `Seq` variants. Include memory
+
+    usage analysis and Big-O complexity explanation.'
+- id: long_0010_exp_013
+  instruction: 'Design a fluent API for railway-oriented programming similar to FsToolkit but with method chaining
+
+    syntax (C# style interop). Implement extension methods `Map`, `Bind`, `Match`, `DefaultWith` for
+
+    `Result<''T, ''E>`. Ensure curried F# functions can compose with fluent C# style. Include usage examples
+
+    in mixed F#/C# solutions and benchmarking against standard functional composition.'
+- id: long_0010_exp_014
+  instruction: 'Write a migration guide from the deprecated Chessie library to modern `FsToolkit.ErrorHandling`.
+
+    Cover: `Rop.bind` → `Result.bind`, `Rop.lift` → `Result.map`, `Trial` CE → `result` CE, and
+
+    `Rop.catch` → `Result.tryCatch`. Include regex search/replace patterns and common compilation errors
+
+    with fixes. Provide a script automating 80% of the migration.'
+- id: long_0010_exp_015
+  instruction: 'Implement property-based tests verifying monad laws (left identity, right identity, associativity)
+
+    for a custom `Result` type using FsCheck. Generate random functions and values to test `bind`
+
+    composition properties. Include shrinkers for custom error types and tests for functor laws
+
+    (composition and identity).'
+- id: long_0010_exp_016
+  instruction: 'Create ASP.NET Core middleware that automatically unwraps `Result<''T, ''E>` from controller actions
+
+    and converts to appropriate HTTP responses (200 OK, 400 BadRequest with error details, 500 Internal).
+
+    Support content negotiation (JSON/ProblemDetails). Include global error handling for unhandled
+
+    exceptions converted to Results and logging integration with Serilog.'
+- id: long_0010_exp_017
+  instruction: 'Build a type-safe SQL query builder using computation expressions that returns `Result<Query, SqlError>`.
+
+    Validate table/column existence at compile time via type providers, but runtime validate parameters
+
+    (SQL injection prevention) and connection errors. Use `AsyncResult` for async execution with
+
+    automatic connection pooling and transaction support.'
+- id: long_0010_exp_018
+  instruction: 'Design a JSON parsing pipeline for a complex domain model (nested records, discriminated unions,
+
+    optional fields) using `Result` accumulation. Parse using System.Text.Json with detailed path
+
+    tracking (e.g., "root.user.address.zipCode: invalid format"). Use `Validation` to report all
+
+    JSON errors simultaneously rather than first-fail. Include custom JSON converters for F# types.'
+- id: long_0010_exp_019
+  instruction: 'Implement parallel validation of independent rules using `AsyncResult.Parallel` with configurable
+
+    degree of parallelism. Validate a user registration form: username uniqueness (DB check), email
+
+    format (regex), password strength (local), email domain MX record (DNS lookup). Aggregate results
+
+    using applicative style. Handle partial failures and cancellation tokens properly.'
+- id: long_0010_exp_020
+  instruction: 'Create a beginner-friendly tutorial implementing form validation for a simple login page using
+
+    `Result` and the `apply` pattern (applicative functor). Fields: email (valid format), password
+
+    (min 8 chars), confirm password (matches). Show how to combine validations without computation
+
+    expressions first, then refactor to `result` CE. Include HTML generation showing error messages.'
+- id: long_0010_exp_021
+  instruction: 'Refactor a C# async/await codebase with `Task` and exception handling to F# `TaskResult`.
+
+    Convert try-catch blocks for file I/O and HTTP calls to railway-oriented style. Handle specific
+
+    exceptions (FileNotFoundException, HttpRequestException) as specific error types. Maintain
+
+    interoperability with existing C# code that expects Task.'
+- id: long_0010_exp_022
+  instruction: 'Build an inventory management system for a game using `Result` for business rule validation.
+
+    Rules: weight capacity (cannot exceed), unique item constraints (no duplicates), quest item
+
+    restrictions (cannot drop), and trading validation (both parties have space). Use `Result` CE
+
+    for transaction atomicity and `Validation` for UI error display.'
+- id: long_0010_exp_023
+  instruction: 'Create a Kubernetes deployment validation pipeline that checks: YAML syntax, resource limits
+
+    (memory/CPU constraints), image pull secrets existence, and namespace quotas. Use `AsyncResult`
+
+    for API calls to K8s cluster and `Result` for local validation. Generate detailed error reports
+
+    showing file paths and line numbers for invalid configurations.'
+- id: long_0010_exp_024
+  instruction: 'Design a hierarchical error type system supporting internationalization (i18n) and error codes.
+
+    Base error type with Code, MessageKey, and Parameters. Specializations: ValidationError (field path),
+
+    InfrastructureError (retryable boolean), DomainError (business rule violation). Include JSON
+
+    serialization for API responses and `Result` mapping functions to transform error types between layers.'
+- id: long_0010_exp_025
+  instruction: 'Implement an F#/C# interoperability layer where C# code throwing exceptions is wrapped into
+
+    `Result` types for F# consumption. Create `Result.guard` and `Result.catch` functions handling
+
+    specific exception types. Include `Task` interop converting `Task` that might throw to
+
+    `Task<Result>`. Provide C# extension methods allowing C# devs to consume F# Result types via
+
+    `Match`, `IsOk`, `IsError` properties.'
+- id: long_0010_exp_026
+  instruction: 'Build a streaming data processor using `IAsyncEnumerable` and `TaskResult` for ETL operations.
+
+    Read CSV files with potential malformed rows, transform to domain objects, validate business
+
+    rules, and bulk insert to database. Continue processing on row errors (log and skip) with
+
+    circuit breaker for DB connection failures. Include backpressure handling and memory-efficient
+
+    processing of GB-sized files.'
+- id: long_0010_exp_027
+  instruction: 'Implement a computation expression for the `Maybe` monad (Option) with `let!` support,
+
+    `return`, and `return!`. Add custom operation `guard` that returns `None` if predicate fails.
+
+    Compare with standard `option` CE in F# core. Include examples with database queries where
+
+    missing data should short-circuit rather than error.'
+- id: long_0010_exp_028
+  instruction: 'Design a Saga pattern implementation for distributed transactions across microservices using
+
+    `AsyncResult`. Services: Order (create), Payment (charge), Inventory (reserve), Shipping (schedule).
+
+    Implement compensation logic for each step (refund, release inventory, cancel shipment). Use
+
+    event sourcing with `Result` types for command validation. Handle partial failures and ensure
+
+    eventual consistency.'
+- id: long_0010_exp_029
+  instruction: 'Create a domain-specific language (DSL) for business rule validation using computation expressions.
+
+    Define custom keywords: `check` (validation), `when` (conditional), `all` (applicative), `any`
+
+    (alternative). Compile to `Result` or `Validation` depending on accumulation needs. Target non-F#
+
+    domain experts with readable syntax while generating efficient F# code.'

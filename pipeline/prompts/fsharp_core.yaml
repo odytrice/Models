@@ -1,0 +1,238 @@
+# F# Core Language -- Teacher: DeepSeek V3.2
+# ~15% of total training data
+# Covers: DUs, pattern matching, computation expressions, pipes, collections, etc.
+
+teacher: deepseek
+domain: fsharp_core
+
+system_prompt: |
+  You are an expert F# developer. Write idiomatic, production-quality F# code.
+  Follow these conventions:
+  - Use pipeline operators (|>) for data transformations
+  - Prefer immutable data (records, DUs) over mutable state
+  - Use pattern matching extensively
+  - Use computation expressions where appropriate
+  - Include type annotations on public APIs
+  - Write concise explanations (2-3 sentences max) before the code
+  - All code must compile with .NET 9 and F# 9
+
+temperature: 0.6
+max_tokens: 4096
+
+prompts:
+  # --- Discriminated Unions & Pattern Matching ---
+  - id: fsharp_core_0001
+    instruction: |
+      Write an F# discriminated union to model a payment method (CreditCard, BankTransfer, Crypto)
+      with associated data. Include a function that calculates processing fees using pattern matching,
+      where CreditCard charges 2.9% + $0.30, BankTransfer charges a flat $1.50, and Crypto charges 1%.
+
+  - id: fsharp_core_0002
+    instruction: |
+      Demonstrate active patterns in F# by creating:
+      1. A partial active pattern that classifies integers as Even or Odd
+      2. A parameterized active pattern that checks if a string matches a regex
+      3. A multi-case active pattern that classifies temperatures as Freezing, Cold, Warm, or Hot
+      Show each being used in match expressions.
+
+  - id: fsharp_core_0003
+    instruction: |
+      Model a simple expression evaluator in F# using a recursive discriminated union.
+      Support: Literal numbers, Add, Subtract, Multiply, Divide, and Negate.
+      Write an eval function using pattern matching, and a pretty-print function that
+      produces infix notation with proper parenthesization.
+
+  - id: fsharp_core_0004
+    instruction: |
+      Create an F# discriminated union representing a binary tree with values at the leaves.
+      Implement these functions using pattern matching:
+      - depth: returns the maximum depth
+      - map: applies a function to all leaf values
+      - fold: folds over all leaf values left-to-right
+      - mirror: swaps left and right subtrees at every node
+
+  # --- Computation Expressions ---
+  - id: fsharp_core_0005
+    instruction: |
+      Write a custom F# computation expression builder for a "Validation" type that
+      accumulates errors (not short-circuits like Result). The Validation type should be
+      either Success<'T> or Failure<string list>. Show the builder class with Bind, Return,
+      and MergeSources (for and! support). Demonstrate with a form validation example
+      that validates name, email, and age simultaneously.
+
+  - id: fsharp_core_0006
+    instruction: |
+      Explain F# async computation expressions with three examples:
+      1. Sequential async operations (downloading two URLs one after another)
+      2. Parallel async operations (using Async.Parallel to download multiple URLs simultaneously)
+      3. An async computation that uses Async.AwaitTask to interop with .NET Task-based APIs
+      Show how to run each with Async.RunSynchronously.
+
+  - id: fsharp_core_0007
+    instruction: |
+      Create an F# task computation expression example that:
+      1. Reads a file asynchronously using System.IO.File.ReadAllTextAsync
+      2. Parses the content as JSON using System.Text.Json
+      3. Transforms the data
+      4. Writes the result back to a new file
+      Show proper error handling with try/with inside the task CE.
+
+  # --- Pipe Operators & Composition ---
+  - id: fsharp_core_0008
+    instruction: |
+      Demonstrate F# function composition and piping by processing a list of customer records.
+      Given a Customer record with Name, Email, TotalSpent, and LastPurchaseDate fields:
+      1. Filter to customers who spent over $1000
+      2. Sort by last purchase date descending
+      3. Take the top 10
+      4. Map to a summary string
+      Show both the pipeline operator (|>) version and the function composition (>>) version.
+
+  - id: fsharp_core_0009
+    instruction: |
+      Write F# code that demonstrates partial application and currying in a practical context.
+      Create a set of string formatting functions built by partially applying a base formatter.
+      Include: currency formatting, date formatting, and percentage formatting.
+      Show how partial application enables creating specialized functions from general ones.
+
+  # --- Records & Types ---
+  - id: fsharp_core_0010
+    instruction: |
+      Demonstrate the differences between F# records, anonymous records, and struct records.
+      Show: creating, updating with `with`, pattern matching, and when to use each type.
+      Include a performance-sensitive example where struct records are appropriate
+      (e.g., a Point3D used in a tight loop).
+
+  - id: fsharp_core_0011
+    instruction: |
+      Write F# code demonstrating units of measure:
+      1. Define units for meters, seconds, kilograms, and derived units (m/s, m/s^2, N)
+      2. Write functions for velocity, acceleration, and force calculations
+      3. Show how the compiler prevents mixing incompatible units
+      4. Demonstrate converting between unit systems (metric to imperial)
+
+  # --- Collections & Sequences ---
+  - id: fsharp_core_0012
+    instruction: |
+      Write an F# module that demonstrates sequence expressions (seq { }) for:
+      1. Generating Fibonacci numbers lazily
+      2. Reading lines from a file lazily (yield! with a reader)
+      3. A tree traversal that yields nodes in depth-first order
+      4. Combining sequences with yield! for flattening nested structures
+      Explain when to use seq vs list vs array in F#.
+
+  - id: fsharp_core_0013
+    instruction: |
+      Demonstrate F# List, Array, and Seq module functions by implementing a simple data pipeline:
+      Given a list of log entries (timestamp, level, message), write functions using
+      List.groupBy, List.sortBy, List.choose, List.collect, List.partition, and List.scan
+      to analyze the logs. Include a brief comment explaining what each function does.
+
+  # --- Error Handling (without FsToolkit) ---
+  - id: fsharp_core_0014
+    instruction: |
+      Show idiomatic F# error handling using the built-in Result type (without FsToolkit):
+      1. A validation function that returns Result<ValidEmail, string>
+      2. Chaining Results with Result.bind and Result.map
+      3. Converting between Option and Result
+      4. Using Result in a pipeline with multiple validation steps
+      Explain the railway-oriented programming concept.
+
+  - id: fsharp_core_0015
+    instruction: |
+      Write F# code that demonstrates Option type usage:
+      1. Option.map, Option.bind, Option.defaultValue, Option.filter
+      2. Pattern matching on options
+      3. Converting between Option and Nullable
+      4. Using Option.ofObj for null-safe interop with C# libraries
+      Show a practical example of chaining Option operations for a lookup pipeline.
+
+  # --- Domain Modeling ---
+  - id: fsharp_core_0016
+    instruction: |
+      Model an e-commerce order system in F# using "making illegal states unrepresentable":
+      - An Order can be Draft, Confirmed, Shipped, or Delivered
+      - Each state carries different data (Draft has items, Confirmed adds payment, Shipped adds tracking)
+      - State transitions are enforced by functions that only accept the correct input state
+      Show the types and transition functions. Explain why this is safer than a single Order type with nullable fields.
+
+  - id: fsharp_core_0017
+    instruction: |
+      Design a simple event sourcing system in F# for a bank account:
+      - Define events: AccountOpened, MoneyDeposited, MoneyWithdrawn, AccountClosed
+      - Define the Account aggregate state
+      - Write an `apply` function that folds events into state
+      - Write command handlers that validate business rules and produce events
+      - Demonstrate replaying an event stream to reconstruct current state
+
+  # --- Interop & Practical ---
+  - id: fsharp_core_0018
+    instruction: |
+      Show F# / C# interop patterns:
+      1. Calling C# libraries from F# (handling nulls, async/Task, interfaces)
+      2. Making F# types friendly for C# consumers (CLIMutable, attributes)
+      3. Using System.Text.Json with F# records and DUs
+      4. Wrapping a C# builder-pattern API in idiomatic F# (pipe-friendly)
+
+  - id: fsharp_core_0019
+    instruction: |
+      Write an F# module that wraps System.IO file operations in a functional style:
+      - readAllText, readLines, writeText, appendText as Result-returning functions
+      - A copyDirectory function using recursive seq expressions
+      - A watchDirectory function using Observable and MailboxProcessor
+      All functions should handle exceptions and return Result<'T, exn>.
+
+  - id: fsharp_core_0020
+    instruction: |
+      Demonstrate F# MailboxProcessor (agent) patterns:
+      1. A simple counter agent that processes Increment/Decrement/GetCount messages
+      2. A rate limiter agent that queues requests and processes them at a fixed rate
+      3. A supervisor agent that monitors child agents and restarts them on failure
+      Show proper message types, reply channels, and error handling.
+
+  # --- New seeds: Uncovered topics ---
+  - id: fsharp_core_0021
+    instruction: |
+      Demonstrate FSharp.Data type providers in F#:
+      1. JsonProvider -- parse a JSON API response with static typing
+      2. CsvProvider -- load and query a CSV dataset
+      3. HtmlProvider -- scrape data from an HTML table
+      Show how type providers give compile-time safety for external data sources.
+      Include examples of accessing nested JSON fields and handling missing values.
+
+  - id: fsharp_core_0022
+    instruction: |
+      Explain and demonstrate struct discriminated unions and struct records in F#.
+      1. Define a struct DU for a small, frequently-allocated type (e.g., Coordinate, Color)
+      2. Show the performance difference vs reference DUs in a tight loop (allocation-free)
+      3. Explain the limitations: no recursive cases, no inheritance
+      4. Show when struct tuples ([<Struct>] ValueTuple) are appropriate
+      Include a benchmark-style comparison with allocation counting.
+
+  - id: fsharp_core_0023
+    instruction: |
+      Demonstrate applicative-style computation expressions in F# using `and!` syntax.
+      1. Show how `and!` enables parallel/independent computations in a CE
+      2. Implement a validation CE where `and!` accumulates ALL errors (not short-circuit)
+      3. Compare `let!` (monadic/sequential) vs `and!` (applicative/parallel) behavior
+      4. Show `and!` with async CE for parallel async operations
+      Explain when applicative style is better than monadic style.
+
+  - id: fsharp_core_0024
+    instruction: |
+      Write an F# build/automation script (.fsx) that:
+      1. Uses #r "nuget:" to reference NuGet packages directly in the script
+      2. Reads environment variables and command-line arguments
+      3. Performs file system operations (clean build directory, copy files)
+      4. Runs external processes (dotnet build, npm install) and checks exit codes
+      5. Generates a version number from git tags
+      Show how .fsx scripts replace Bash/PowerShell for cross-platform automation.
+
+  - id: fsharp_core_0025
+    instruction: |
+      Demonstrate tail recursion and continuation-passing style (CPS) in F#:
+      1. A naive recursive function that causes stack overflow on large input
+      2. The same function rewritten with tail recursion (using accumulator)
+      3. A tree traversal function converted to CPS to make it tail-recursive
+      4. Using `Seq.unfold` as an alternative to recursion for generating sequences
+      Explain how the F# compiler optimizes tail calls and when `rec` is required.

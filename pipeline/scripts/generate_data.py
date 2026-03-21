@@ -1,0 +1,441 @@
+"""
+Multi-Teacher Data Generation Pipeline
+
+Generates training data from three teacher models via Ollama cloud API:
+  - Kimi K2.5:      Svelte, TypeScript, long-context, cross-domain
+  - MiniMax M2.7:   Agentic coding, Docker/K8s, multi-step SWE
+  - DeepSeek V3.2:  F#, Akka.NET, .NET/ASP.NET Core
+
+Each teacher is assigned prompts from its strongest domains.
+Output is JSONL with one sample per line.
+
+Usage:
+  python generate_data.py --config ../prompts/fsharp_core.yaml --output ../../data/raw/fsharp_core.jsonl
+  python generate_data.py --config ../prompts/svelte.yaml --output ../../data/raw/svelte.jsonl --concurrency 5
+  python generate_data.py --config ../prompts/fsharp_core.yaml --output ../../data/raw/fsharp_core.jsonl --with-docs
+"""
+
+import argparse
+import asyncio
+import json
+import logging
+import time
+import uuid
+from dataclasses import dataclass, asdict
+from pathlib import Path
+from typing import Optional
+
+import httpx
+import yaml
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+log = logging.getLogger(__name__)
+
+# Ollama API endpoint (local Ollama server proxying to cloud models)
+OLLAMA_API_BASE = "http://localhost:11434"
+OLLAMA_CHAT_URL = f"{OLLAMA_API_BASE}/api/chat"
+OLLAMA_GENERATE_URL = f"{OLLAMA_API_BASE}/api/generate"
+
+# Teacher model identifiers for Ollama cloud
+TEACHERS = {
+    "kimi": "kimi-k2.5:cloud",
+    "minimax": "minimax-m2.7:cloud",
+    "deepseek": "deepseek-v3.2:cloud",
+}
+
+# Default generation parameters per teacher
+TEACHER_DEFAULTS = {
+    "kimi": {
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "num_predict": 8192,
+    },
+    "minimax": {
+        "temperature": 0.4,  # Lower temp to reduce verbosity
+        "top_p": 0.9,
+        "num_predict": 8192,
+    },
+    "deepseek": {
+        "temperature": 0.6,
+        "top_p": 0.9,
+        "num_predict": 8192,
+    },
+}
+
+
+@dataclass
+class Prompt:
+    """A single prompt to send to a teacher."""
+
+    id: str
+    instruction: str
+    system_prompt: str
+    teacher: str  # "kimi", "minimax", or "deepseek"
+    domain: str
+    context: str = ""  # optional documentation context to include
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
+
+
+@dataclass
+class GeneratedSample:
+    """A completed instruction/response pair."""
+
+    id: str
+    instruction: str
+    response: str
+    teacher: str
+    domain: str
+    model: str  # full Ollama model name
+    generation_time_s: float
+    token_count: int = 0
+    timestamp: str = ""
+
+
+@dataclass
+class PromptConfig:
+    """Configuration loaded from a YAML prompt file."""
+
+    teacher: str
+    domain: str
+    system_prompt: str
+    prompts: list[dict]
+    context_files: list[str] = None
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
+
+
+def load_prompt_config(config_path: Path) -> PromptConfig:
+    """Load prompt configuration from a YAML file."""
+    with open(config_path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+
+    return PromptConfig(
+        teacher=data["teacher"],
+        domain=data["domain"],
+        system_prompt=data["system_prompt"],
+        prompts=data["prompts"],
+        context_files=data.get("context_files", []),
+        temperature=data.get("temperature"),
+        max_tokens=data.get("max_tokens"),
+    )
+
+
+def load_context(context_files: list[str], base_dir: Path) -> str:
+    """Load and concatenate context files (scraped docs, etc.)."""
+    context_parts = []
+    for filepath in context_files or []:
+        full_path = base_dir / filepath
+        if full_path.exists():
+            content = full_path.read_text(encoding="utf-8")
+            context_parts.append(f"--- {filepath} ---\n{content}")
+            log.info(f"Loaded context: {filepath} ({len(content)} chars)")
+        else:
+            log.warning(f"Context file not found: {full_path}")
+    return "\n\n".join(context_parts)
+
+
+async def generate_response(
+    client: httpx.AsyncClient,
+    prompt: Prompt,
+    semaphore: asyncio.Semaphore,
+) -> Optional[GeneratedSample]:
+    """Send a single prompt to the appropriate teacher via Ollama API."""
+    async with semaphore:
+        model = TEACHERS[prompt.teacher]
+        defaults = TEACHER_DEFAULTS[prompt.teacher]
+
+        temperature = prompt.temperature or defaults["temperature"]
+        max_tokens = prompt.max_tokens or defaults["num_predict"]
+
+        # Build messages
+        messages = [
+            {"role": "system", "content": prompt.system_prompt},
+        ]
+
+        # Include documentation context if provided
+        if prompt.context:
+            messages.append(
+                {
+                    "role": "user",
+                    "content": f"Reference documentation:\n\n{prompt.context}",
+                }
+            )
+            messages.append(
+                {
+                    "role": "assistant",
+                    "content": "I've reviewed the documentation. Please provide your question or task.",
+                }
+            )
+
+        messages.append({"role": "user", "content": prompt.instruction})
+
+        payload = {
+            "model": model,
+            "messages": messages,
+            "stream": False,
+            "options": {
+                "temperature": temperature,
+                "top_p": defaults["top_p"],
+                "num_predict": max_tokens,
+            },
+        }
+
+        start = time.monotonic()
+        try:
+            log.info(f"[{prompt.id}] Sending to {model}...")
+            response = await client.post(
+                OLLAMA_CHAT_URL,
+                json=payload,
+                timeout=600.0,  # 10 min timeout for long responses
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            elapsed = time.monotonic() - start
+            content = data.get("message", {}).get("content", "")
+            eval_count = data.get("eval_count", 0)
+
+            log.info(
+                f"[{prompt.id}] Done in {elapsed:.1f}s ({eval_count} tokens, {model})"
+            )
+
+            return GeneratedSample(
+                id=prompt.id,
+                instruction=prompt.instruction,
+                response=content,
+                teacher=prompt.teacher,
+                domain=prompt.domain,
+                model=model,
+                generation_time_s=round(elapsed, 2),
+                token_count=eval_count,
+                timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            )
+
+        except httpx.TimeoutException:
+            log.error(f"[{prompt.id}] Timeout after {time.monotonic() - start:.0f}s")
+            return None
+        except httpx.HTTPStatusError as e:
+            log.error(
+                f"[{prompt.id}] HTTP error: {e.response.status_code} - {e.response.text[:500]}"
+            )
+            return None
+        except Exception as e:
+            log.error(f"[{prompt.id}] Unexpected error: {e}")
+            return None
+
+
+async def generate_batch(
+    prompts: list[Prompt],
+    output_path: Path,
+    concurrency: int = 2,
+    retry_failed: bool = True,
+    max_retries: int = 2,
+):
+    """Generate responses for a batch of prompts with controlled concurrency."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    semaphore = asyncio.Semaphore(concurrency)
+
+    # Track existing samples to support resume
+    existing_ids = set()
+    if output_path.exists():
+        with open(output_path, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    try:
+                        existing_ids.add(json.loads(line)["id"])
+                    except (json.JSONDecodeError, KeyError):
+                        pass
+        log.info(
+            f"Resuming: found {len(existing_ids)} existing samples in {output_path}"
+        )
+
+    # Filter to only unfinished prompts
+    remaining = [p for p in prompts if p.id not in existing_ids]
+    log.info(f"Generating {len(remaining)} samples ({len(existing_ids)} already done)")
+
+    if not remaining:
+        log.info("All samples already generated. Nothing to do.")
+        return
+
+    async with httpx.AsyncClient() as client:
+        # Process in batches to avoid overwhelming the API
+        completed = 0
+        failed_prompts = []
+
+        tasks = [generate_response(client, prompt, semaphore) for prompt in remaining]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        with open(output_path, "a", encoding="utf-8") as f:
+            for prompt, result in zip(remaining, results):
+                if isinstance(result, Exception):
+                    log.error(f"[{prompt.id}] Exception: {result}")
+                    failed_prompts.append(prompt)
+                elif result is None:
+                    failed_prompts.append(prompt)
+                else:
+                    f.write(json.dumps(asdict(result), ensure_ascii=False) + "\n")
+                    completed += 1
+
+        # Retry failed prompts
+        if retry_failed and failed_prompts:
+            for retry_num in range(1, max_retries + 1):
+                log.info(
+                    f"Retry {retry_num}/{max_retries}: {len(failed_prompts)} failed prompts"
+                )
+                await asyncio.sleep(5)  # brief pause before retry
+
+                retry_tasks = [
+                    generate_response(client, p, semaphore) for p in failed_prompts
+                ]
+                retry_results = await asyncio.gather(
+                    *retry_tasks, return_exceptions=True
+                )
+
+                still_failed = []
+                with open(output_path, "a", encoding="utf-8") as f:
+                    for prompt, result in zip(failed_prompts, retry_results):
+                        if isinstance(result, Exception) or result is None:
+                            still_failed.append(prompt)
+                        else:
+                            f.write(
+                                json.dumps(asdict(result), ensure_ascii=False) + "\n"
+                            )
+                            completed += 1
+
+                failed_prompts = still_failed
+                if not failed_prompts:
+                    break
+
+    log.info("=" * 60)
+    log.info("GENERATION SUMMARY")
+    log.info(f"  Completed: {completed}")
+    log.info(f"  Failed:    {len(failed_prompts)}")
+    log.info(f"  Skipped:   {len(existing_ids)} (already existed)")
+    log.info(f"  Output:    {output_path}")
+    if failed_prompts:
+        log.warning(f"  Failed IDs: {[p.id for p in failed_prompts]}")
+    log.info("=" * 60)
+
+
+def build_prompts(config: PromptConfig, context: str, doc_lookup=None) -> list[Prompt]:
+    """Build Prompt objects from a loaded config.
+
+    If doc_lookup is provided, prompts with a `context_query` field will have
+    their context enriched with relevant documentation fetched on-demand.
+    """
+    prompts = []
+    for i, prompt_data in enumerate(config.prompts):
+        prompt_id = prompt_data.get("id", f"{config.domain}_{i:04d}")
+        instruction = prompt_data["instruction"]
+
+        # Support prompt-level overrides
+        temperature = prompt_data.get("temperature", config.temperature)
+        max_tokens = prompt_data.get("max_tokens", config.max_tokens)
+
+        # On-demand doc lookup via context_query field
+        prompt_context = context
+        context_query = prompt_data.get("context_query", "")
+        if context_query and doc_lookup:
+            parts = context_query.split(":", 1)
+            library = parts[0].strip() if len(parts) > 1 else ""
+            topic = parts[-1].strip()
+            doc_text = doc_lookup.lookup(library, topic, max_chars=8000)
+            if doc_text:
+                prompt_context = (
+                    f"{context}\n\n--- Documentation: {context_query} ---\n{doc_text}"
+                    if context
+                    else doc_text
+                )
+
+        prompts.append(
+            Prompt(
+                id=prompt_id,
+                instruction=instruction,
+                system_prompt=config.system_prompt,
+                teacher=config.teacher,
+                domain=config.domain,
+                context=prompt_context,
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+        )
+
+    return prompts
+
+
+async def main_async(args):
+    config_path = args.config.resolve()
+    config = load_prompt_config(config_path)
+
+    log.info(
+        f"Loaded config: teacher={config.teacher}, domain={config.domain}, "
+        f"{len(config.prompts)} prompts"
+    )
+
+    # Load context files relative to the config file's directory
+    context = load_context(config.context_files, config_path.parent)
+    if context:
+        log.info(f"Total context: {len(context)} chars")
+
+    # Initialize doc_lookup if --with-docs flag is set
+    doc_lookup = None
+    if getattr(args, "with_docs", False):
+        from doc_lookup import DocLookup
+
+        doc_lookup = DocLookup()
+        log.info("Doc lookup enabled -- will fetch docs for prompts with context_query")
+
+    prompts = build_prompts(config, context, doc_lookup)
+
+    if doc_lookup:
+        doc_lookup.close()
+
+    await generate_batch(
+        prompts=prompts,
+        output_path=args.output.resolve(),
+        concurrency=args.concurrency,
+    )
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Multi-Teacher Data Generation Pipeline"
+    )
+    parser.add_argument(
+        "--config",
+        type=Path,
+        required=True,
+        help="YAML prompt config file (see pipeline/prompts/ for examples)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        required=True,
+        help="Output JSONL file path",
+    )
+    parser.add_argument(
+        "--concurrency",
+        type=int,
+        default=5,
+        help="Max concurrent API requests (default: 5, Max plan supports 10)",
+    )
+    parser.add_argument(
+        "--with-docs",
+        action="store_true",
+        help="Fetch docs via doc_lookup for prompts with context_query field",
+    )
+    args = parser.parse_args()
+
+    if not args.config.exists():
+        log.error(f"Config file not found: {args.config}")
+        return
+
+    asyncio.run(main_async(args))
+
+
+if __name__ == "__main__":
+    main()

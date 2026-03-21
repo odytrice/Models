@@ -10,6 +10,22 @@ CLAUDE.md
 # GGUF model files (large binaries)
 *.gguf
 
+# Training data (generated, large)
+data/raw/
+data/verified/
+data/formatted/
+
+# Training outputs (model weights, checkpoints)
+configs/outputs/
+outputs/
+
+# Scraped documentation
+pipeline/docs/
+
+# Python virtual environment
+.venv/
+venv/
+
 # HuggingFace CLI cache
 .cache/
 
