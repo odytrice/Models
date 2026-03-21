@@ -2,7 +2,7 @@
 
 Recommended models and configuration for GPUs with 32GB VRAM (RTX 5090, etc.).
 
-> See [README.md](README.md) for universal setup instructions (environment variables, quantization, KV cache, context size reference).
+> See [OLLAMA-GUIDE.md](OLLAMA-GUIDE.md) for universal setup instructions (environment variables, quantization, KV cache, context size reference).
 
 ## Target Hardware
 
@@ -174,7 +174,7 @@ After loading a model, verify full GPU offload and check VRAM usage:
 ollama ps
 ```
 
-Expected output should show **100% GPU**. If you see any CPU percentage, the model is partially running on system RAM — reduce `num_ctx` or switch to `q4_0` KV cache. See [README.md](README.md#verifying-gpu-offload-and-vram-usage) for details.
+Expected output should show **100% GPU**. If you see any CPU percentage, the model is partially running on system RAM — reduce `num_ctx` or switch to `q4_0` KV cache. See [OLLAMA-GUIDE.md](OLLAMA-GUIDE.md#verifying-gpu-offload-and-vram-usage) for details.
 
 ---
 

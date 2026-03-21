@@ -2,7 +2,7 @@
 
 Recommended models and configuration for GPUs with 24GB VRAM (RTX 4090, RTX 3090, RTX A5000, etc.).
 
-> See [README.md](README.md) for universal setup instructions (environment variables, quantization, KV cache, context size reference).
+> See [OLLAMA-GUIDE.md](OLLAMA-GUIDE.md) for universal setup instructions (environment variables, quantization, KV cache, context size reference).
 
 ## Target Hardware
 
@@ -123,7 +123,7 @@ After loading a model, check VRAM usage and GPU offload:
 ollama ps
 ```
 
-Should show **100% GPU**. If you see any CPU percentage, reduce `num_ctx` or switch to `q4_0` KV cache. See [README.md](README.md#verifying-gpu-offload-and-vram-usage) for details.
+Should show **100% GPU**. If you see any CPU percentage, reduce `num_ctx` or switch to `q4_0` KV cache. See [OLLAMA-GUIDE.md](OLLAMA-GUIDE.md#verifying-gpu-offload-and-vram-usage) for details.
 
 ---
 
