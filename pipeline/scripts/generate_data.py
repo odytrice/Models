@@ -302,63 +302,40 @@ async def generate_batch(
         log.info("All samples already generated. Nothing to do.")
         return
 
-    async with httpx.AsyncClient() as client:
-        # Process in batches to avoid overwhelming the API
-        completed = 0
-        failed_prompts = []
+    # Use a lock to safely write to file from concurrent tasks
+    file_lock = asyncio.Lock()
+    completed = 0
+    failed_ids = []
 
-        tasks = [generate_response(client, prompt, semaphore) for prompt in remaining]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        with open(output_path, "a", encoding="utf-8") as f:
-            for prompt, result in zip(remaining, results):
-                if isinstance(result, Exception):
-                    log.error(f"[{prompt.id}] Exception: {result}")
-                    failed_prompts.append(prompt)
-                elif result is None:
-                    failed_prompts.append(prompt)
-                else:
-                    f.write(json.dumps(asdict(result), ensure_ascii=False) + "\n")
-                    completed += 1
-
-        # Retry failed prompts
-        if retry_failed and failed_prompts:
-            for retry_num in range(1, max_retries + 1):
+    async def process_and_write(client, prompt):
+        nonlocal completed
+        result = await generate_response(client, prompt, semaphore)
+        if result is None:
+            failed_ids.append(prompt.id)
+            return
+        async with file_lock:
+            with open(output_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(asdict(result), ensure_ascii=False) + "\n")
+                f.flush()
+            completed += 1
+            pct = completed / len(remaining) * 100
+            if completed % 10 == 0:
                 log.info(
-                    f"Retry {retry_num}/{max_retries}: {len(failed_prompts)} failed prompts"
-                )
-                await asyncio.sleep(5)  # brief pause before retry
-
-                retry_tasks = [
-                    generate_response(client, p, semaphore) for p in failed_prompts
-                ]
-                retry_results = await asyncio.gather(
-                    *retry_tasks, return_exceptions=True
+                    f"Progress: {completed}/{len(remaining)} ({pct:.1f}%) completed, {len(failed_ids)} failed"
                 )
 
-                still_failed = []
-                with open(output_path, "a", encoding="utf-8") as f:
-                    for prompt, result in zip(failed_prompts, retry_results):
-                        if isinstance(result, Exception) or result is None:
-                            still_failed.append(prompt)
-                        else:
-                            f.write(
-                                json.dumps(asdict(result), ensure_ascii=False) + "\n"
-                            )
-                            completed += 1
-
-                failed_prompts = still_failed
-                if not failed_prompts:
-                    break
+    async with httpx.AsyncClient() as client:
+        tasks = [process_and_write(client, prompt) for prompt in remaining]
+        await asyncio.gather(*tasks, return_exceptions=True)
 
     log.info("=" * 60)
     log.info("GENERATION SUMMARY")
     log.info(f"  Completed: {completed}")
-    log.info(f"  Failed:    {len(failed_prompts)}")
+    log.info(f"  Failed:    {len(failed_ids)}")
     log.info(f"  Skipped:   {len(existing_ids)} (already existed)")
     log.info(f"  Output:    {output_path}")
-    if failed_prompts:
-        log.warning(f"  Failed IDs: {[p.id for p in failed_prompts]}")
+    if failed_ids:
+        log.warning(f"  Failed IDs: {failed_ids}")
     log.info("=" * 60)
 
 
