@@ -142,8 +142,12 @@ async def generate_response(
     client: httpx.AsyncClient,
     prompt: Prompt,
     semaphore: asyncio.Semaphore,
+    max_retries: int = 5,
 ) -> Optional[GeneratedSample]:
-    """Send a single prompt to the appropriate teacher via Ollama API."""
+    """Send a single prompt to the appropriate teacher via Ollama API.
+
+    Retries with exponential backoff on 429 (rate limit) and 5xx errors.
+    """
     async with semaphore:
         model = TEACHERS[prompt.teacher]
         defaults = TEACHER_DEFAULTS[prompt.teacher]
@@ -184,48 +188,85 @@ async def generate_response(
             },
         }
 
-        start = time.monotonic()
-        try:
-            log.info(f"[{prompt.id}] Sending to {model}...")
-            response = await client.post(
-                OLLAMA_CHAT_URL,
-                json=payload,
-                timeout=600.0,  # 10 min timeout for long responses
-            )
-            response.raise_for_status()
-            data = response.json()
+        for attempt in range(max_retries + 1):
+            start = time.monotonic()
+            try:
+                if attempt == 0:
+                    log.info(f"[{prompt.id}] Sending to {model}...")
+                else:
+                    log.info(
+                        f"[{prompt.id}] Retry {attempt}/{max_retries} to {model}..."
+                    )
 
-            elapsed = time.monotonic() - start
-            content = data.get("message", {}).get("content", "")
-            eval_count = data.get("eval_count", 0)
+                response = await client.post(
+                    OLLAMA_CHAT_URL,
+                    json=payload,
+                    timeout=600.0,  # 10 min timeout for long responses
+                )
+                response.raise_for_status()
+                data = response.json()
 
-            log.info(
-                f"[{prompt.id}] Done in {elapsed:.1f}s ({eval_count} tokens, {model})"
-            )
+                elapsed = time.monotonic() - start
+                content = data.get("message", {}).get("content", "")
+                eval_count = data.get("eval_count", 0)
 
-            return GeneratedSample(
-                id=prompt.id,
-                instruction=prompt.instruction,
-                response=content,
-                teacher=prompt.teacher,
-                domain=prompt.domain,
-                model=model,
-                generation_time_s=round(elapsed, 2),
-                token_count=eval_count,
-                timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            )
+                log.info(
+                    f"[{prompt.id}] Done in {elapsed:.1f}s ({eval_count} tokens, {model})"
+                )
 
-        except httpx.TimeoutException:
-            log.error(f"[{prompt.id}] Timeout after {time.monotonic() - start:.0f}s")
-            return None
-        except httpx.HTTPStatusError as e:
-            log.error(
-                f"[{prompt.id}] HTTP error: {e.response.status_code} - {e.response.text[:500]}"
-            )
-            return None
-        except Exception as e:
-            log.error(f"[{prompt.id}] Unexpected error: {e}")
-            return None
+                return GeneratedSample(
+                    id=prompt.id,
+                    instruction=prompt.instruction,
+                    response=content,
+                    teacher=prompt.teacher,
+                    domain=prompt.domain,
+                    model=model,
+                    generation_time_s=round(elapsed, 2),
+                    token_count=eval_count,
+                    timestamp=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                )
+
+            except httpx.HTTPStatusError as e:
+                status = e.response.status_code
+                if status == 429 or status >= 500:
+                    if attempt < max_retries:
+                        # Exponential backoff: 2s, 4s, 8s, 16s, 32s
+                        delay = 2 ** (attempt + 1)
+                        log.warning(
+                            f"[{prompt.id}] {status} error, backing off {delay}s "
+                            f"(attempt {attempt + 1}/{max_retries})"
+                        )
+                        await asyncio.sleep(delay)
+                        continue
+                    else:
+                        log.error(
+                            f"[{prompt.id}] {status} error after {max_retries} retries, giving up"
+                        )
+                        return None
+                else:
+                    log.error(
+                        f"[{prompt.id}] HTTP error: {status} - {e.response.text[:500]}"
+                    )
+                    return None
+
+            except httpx.TimeoutException:
+                if attempt < max_retries:
+                    delay = 2 ** (attempt + 1)
+                    log.warning(
+                        f"[{prompt.id}] Timeout, backing off {delay}s "
+                        f"(attempt {attempt + 1}/{max_retries})"
+                    )
+                    await asyncio.sleep(delay)
+                    continue
+                else:
+                    log.error(f"[{prompt.id}] Timeout after {max_retries} retries")
+                    return None
+
+            except Exception as e:
+                log.error(f"[{prompt.id}] Unexpected error: {e}")
+                return None
+
+        return None
 
 
 async def generate_batch(
