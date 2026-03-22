@@ -1,23 +1,26 @@
 """
 Parallel Training Data Generation Runner
 
-Runs all 3 teachers (DeepSeek, Kimi, MiniMax) concurrently in a single process,
-with interleaved log output. Each teacher processes its assigned files sequentially.
+Runs all 3 teachers (DeepSeek, Kimi, MiniMax) concurrently as background
+processes, showing a live status dashboard instead of per-line logs.
 
 Usage:
-    python run_generation.py                    # Generate only
+    python run_generation.py                    # Generate with status dashboard
     python run_generation.py --verify           # Generate + verify + format
     python run_generation.py --concurrency 8    # Custom concurrency per teacher
+    python run_generation.py --verbose          # Show per-line logs instead of dashboard
+    python run_generation.py --status           # Just print status and exit
 """
 
 import argparse
 import asyncio
-import json
 import logging
+import os
 import shutil
 import subprocess
 import sys
 import time
+from datetime import datetime, timedelta
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -27,29 +30,43 @@ VERIFIED_DIR = PROJECT_DIR / "data" / "verified"
 EXPANDED_DIR = SCRIPT_DIR.parent / "prompts" / "expanded"
 
 # Teacher -> list of (expanded_yaml_stem, output_name)
+# Redistributed: dotnet_aspnet -> Kimi, general_coding -> MiniMax
 TEACHERS = {
     "DeepSeek": [
         ("fsharp_core_expanded", "fsharp_core"),
         ("fsharp_libraries_expanded", "fsharp_libraries"),
-        ("dotnet_aspnet_expanded", "dotnet_aspnet"),
-        ("general_coding_expanded", "general_coding"),
     ],
     "Kimi": [
         ("svelte_typescript_expanded", "svelte_typescript"),
         ("cross_domain_expanded", "cross_domain"),
         ("long_context_expanded", "long_context"),
+        ("dotnet_aspnet_expanded_kimi", "dotnet_aspnet"),
     ],
     "MiniMax": [
         ("docker_kubernetes_expanded", "docker_kubernetes"),
         ("agentic_swe_expanded", "agentic_swe"),
+        ("general_coding_expanded_minimax", "general_coding"),
     ],
 }
+
+# All output names across all teachers (for status/verify)
+ALL_OUTPUTS = [
+    "fsharp_core",
+    "fsharp_libraries",
+    "svelte_typescript",
+    "cross_domain",
+    "long_context",
+    "dotnet_aspnet",
+    "docker_kubernetes",
+    "agentic_swe",
+    "general_coding",
+]
 
 # Files that need F# verification
 FSHARP_DOMAINS = {"fsharp_core", "fsharp_libraries", "dotnet_aspnet", "cross_domain"}
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.WARNING,
     format="%(asctime)s [%(levelname)s] %(message)s",
 )
 log = logging.getLogger(__name__)
@@ -71,8 +88,107 @@ def count_prompts(yaml_path: Path) -> int:
     return len(data.get("prompts", []))
 
 
-async def run_generate(config: Path, output: Path, concurrency: int, label: str):
-    """Run generate_data.py as a subprocess with live output."""
+def get_totals() -> dict:
+    """Get prompt totals for each domain from expanded YAMLs."""
+    totals = {}
+    for teacher, files in TEACHERS.items():
+        for yaml_stem, output_name in files:
+            config = EXPANDED_DIR / f"{yaml_stem}.yaml"
+            totals[output_name] = {
+                "total": count_prompts(config),
+                "teacher": teacher,
+            }
+    return totals
+
+
+def print_status(totals: dict, start_time: float = None):
+    """Print the status dashboard."""
+    now = datetime.now()
+    os.system("cls" if os.name == "nt" else "clear")
+
+    print(f"{'=' * 65}")
+    print(f"  GENERATION STATUS -- {now.strftime('%Y-%m-%d %H:%M:%S')}")
+    if start_time:
+        elapsed = timedelta(seconds=time.monotonic() - start_time)
+        print(f"  Running for {str(elapsed).split('.')[0]}")
+    print(f"{'=' * 65}\n")
+
+    grand_done = 0
+    grand_total = 0
+
+    for teacher in ["DeepSeek", "Kimi", "MiniMax"]:
+        files = TEACHERS[teacher]
+        teacher_done = 0
+        teacher_total = 0
+
+        domains_info = []
+        for yaml_stem, output_name in files:
+            raw_path = RAW_DIR / f"{output_name}.jsonl"
+            total = totals[output_name]["total"]
+            done = count_lines(raw_path)
+            teacher_done += done
+            teacher_total += total
+            domains_info.append((output_name, done, total))
+
+        teacher_pct = (teacher_done / teacher_total * 100) if teacher_total > 0 else 0
+        teacher_status = "DONE" if teacher_done >= teacher_total else "RUNNING"
+
+        print(
+            f"  {teacher} ({teacher_done}/{teacher_total} - {teacher_pct:.0f}%) [{teacher_status}]"
+        )
+        print(f"  {'-' * 55}")
+
+        for domain, done, total in domains_info:
+            pct = (done / total * 100) if total > 0 else 0
+            bar_width = 25
+            filled = int(bar_width * pct / 100)
+            bar = "#" * filled + "-" * (bar_width - filled)
+
+            if done >= total and total > 0:
+                status = "[DONE]   "
+            elif done > 0:
+                status = "[RUNNING]"
+            else:
+                status = "[PEND]   "
+
+            print(
+                f"    {domain:25s} {bar} {done:5d}/{total:<5d} ({pct:5.1f}%) {status}"
+            )
+
+        print()
+        grand_done += teacher_done
+        grand_total += teacher_total
+
+    grand_pct = (grand_done / grand_total * 100) if grand_total > 0 else 0
+    print(f"  {'-' * 55}")
+    print(f"  DISTILLED TOTAL: {grand_done:,} / {grand_total:,} ({grand_pct:.1f}%)")
+
+    oci_path = VERIFIED_DIR / "opencode_instruct.jsonl"
+    oci_count = count_lines(oci_path)
+    if oci_count > 0:
+        print(f"  OPENCODE INSTRUCT: {oci_count:,} samples (verified)")
+    print(f"  GRAND TOTAL: {grand_done + oci_count:,} samples")
+
+    # Estimate remaining time
+    remaining = grand_total - grand_done
+    if start_time and grand_done > 0:
+        elapsed_s = time.monotonic() - start_time
+        rate = grand_done / (elapsed_s / 60)  # samples per minute
+        if rate > 0 and remaining > 0:
+            eta_min = remaining / rate
+            finish = now + timedelta(minutes=eta_min)
+            print(f"\n  Rate: ~{rate:.1f} samples/min")
+            print(f"  Remaining: {remaining:,} samples")
+            print(f"  ETA: ~{finish.strftime('%Y-%m-%d %H:%M')}")
+
+    if grand_done >= grand_total:
+        print(f"\n  ** ALL GENERATION COMPLETE **")
+
+    print(f"\n{'=' * 65}")
+
+
+async def run_generate_quiet(config: Path, output: Path, concurrency: int, label: str):
+    """Run generate_data.py as a background subprocess (suppressed output)."""
     output.parent.mkdir(parents=True, exist_ok=True)
 
     existing = count_lines(output)
@@ -80,10 +196,40 @@ async def run_generate(config: Path, output: Path, concurrency: int, label: str)
     remaining = total - existing
 
     if remaining <= 0:
-        log.info(f"[{label}] Already complete ({existing}/{total} samples)")
         return
 
-    log.info(f"[{label}] Starting: {remaining} remaining of {total} ({existing} done)")
+    proc = await asyncio.create_subprocess_exec(
+        sys.executable,
+        str(SCRIPT_DIR / "generate_data.py"),
+        "--config",
+        str(config),
+        "--output",
+        str(output),
+        "--concurrency",
+        str(concurrency),
+        stdout=asyncio.subprocess.DEVNULL,
+        stderr=asyncio.subprocess.DEVNULL,
+        cwd=str(SCRIPT_DIR),
+    )
+
+    await proc.wait()
+
+
+async def run_generate_verbose(
+    config: Path, output: Path, concurrency: int, label: str
+):
+    """Run generate_data.py with live per-line output."""
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    existing = count_lines(output)
+    total = count_prompts(config)
+    remaining = total - existing
+
+    if remaining <= 0:
+        print(f"[{label}] Already complete ({existing}/{total} samples)")
+        return
+
+    print(f"[{label}] Starting: {remaining} remaining of {total} ({existing} done)")
 
     proc = await asyncio.create_subprocess_exec(
         sys.executable,
@@ -106,114 +252,109 @@ async def run_generate(config: Path, output: Path, concurrency: int, label: str)
 
     await proc.wait()
 
-    final_count = count_lines(output)
-    if proc.returncode == 0:
-        log.info(f"[{label}] Complete: {final_count} samples")
-    else:
-        log.warning(
-            f"[{label}] Exited with code {proc.returncode}, {final_count} samples so far"
-        )
 
-
-async def run_teacher(teacher: str, files: list, concurrency: int):
+async def run_teacher(teacher: str, files: list, concurrency: int, verbose: bool):
     """Run all files for a single teacher sequentially."""
-    log.info(f"=== {teacher} starting ({len(files)} files) ===")
-    start = time.monotonic()
+    run_fn = run_generate_verbose if verbose else run_generate_quiet
 
     for yaml_stem, output_name in files:
         config = EXPANDED_DIR / f"{yaml_stem}.yaml"
         output = RAW_DIR / f"{output_name}.jsonl"
-        await run_generate(config, output, concurrency, f"{teacher[:4]}:{output_name}")
-
-    elapsed = time.monotonic() - start
-    log.info(f"=== {teacher} finished in {elapsed / 3600:.1f}h ===")
+        await run_fn(config, output, concurrency, f"{teacher[:4]}:{output_name}")
 
 
-async def generate_all(concurrency: int):
+async def status_loop(totals: dict, start_time: float, check_interval: int = 15):
+    """Periodically refresh the status dashboard."""
+    grand_total = sum(t["total"] for t in totals.values())
+
+    while True:
+        print_status(totals, start_time)
+        print(
+            f"  Refreshing every {check_interval}s (generation running in background)"
+        )
+
+        # Check if all done
+        grand_done = sum(count_lines(RAW_DIR / f"{name}.jsonl") for name in ALL_OUTPUTS)
+        if grand_done >= grand_total:
+            break
+
+        await asyncio.sleep(check_interval)
+
+
+async def generate_all(concurrency: int, verbose: bool):
     """Run all 3 teachers in parallel."""
-    log.info("=" * 60)
-    log.info("PARALLEL GENERATION: 3 teachers, concurrency=%d each", concurrency)
-    log.info("=" * 60)
+    totals = get_totals()
+    start_time = time.monotonic()
 
-    # Count totals
-    grand_total = 0
-    for teacher, files in TEACHERS.items():
-        teacher_total = 0
-        for yaml_stem, output_name in files:
-            config = EXPANDED_DIR / f"{yaml_stem}.yaml"
-            n = count_prompts(config)
-            teacher_total += n
-        log.info(f"  {teacher}: {teacher_total} prompts across {len(files)} files")
-        grand_total += teacher_total
-    log.info(f"  TOTAL: {grand_total} prompts")
-    log.info("=" * 60)
+    if verbose:
+        # Verbose mode: stream per-line logs
+        await asyncio.gather(
+            run_teacher("DeepSeek", TEACHERS["DeepSeek"], concurrency, verbose=True),
+            run_teacher("Kimi", TEACHERS["Kimi"], concurrency, verbose=True),
+            run_teacher("MiniMax", TEACHERS["MiniMax"], concurrency, verbose=True),
+        )
+    else:
+        # Dashboard mode: run generators in background, show status
+        gen_task = asyncio.gather(
+            run_teacher("DeepSeek", TEACHERS["DeepSeek"], concurrency, verbose=False),
+            run_teacher("Kimi", TEACHERS["Kimi"], concurrency, verbose=False),
+            run_teacher("MiniMax", TEACHERS["MiniMax"], concurrency, verbose=False),
+        )
+        status_task = asyncio.create_task(status_loop(totals, start_time))
 
-    start = time.monotonic()
+        # Wait for generation to finish, then cancel status loop
+        await gen_task
+        status_task.cancel()
+        try:
+            await status_task
+        except asyncio.CancelledError:
+            pass
 
-    # Launch all 3 teachers concurrently
-    await asyncio.gather(
-        run_teacher("DeepSeek", TEACHERS["DeepSeek"], concurrency),
-        run_teacher("Kimi", TEACHERS["Kimi"], concurrency),
-        run_teacher("MiniMax", TEACHERS["MiniMax"], concurrency),
-    )
-
-    elapsed = time.monotonic() - start
-    log.info("=" * 60)
-    log.info(f"ALL GENERATION COMPLETE in {elapsed / 3600:.1f}h")
-
-    # Print final counts
-    total = 0
-    for teacher, files in TEACHERS.items():
-        for _, output_name in files:
-            n = count_lines(RAW_DIR / f"{output_name}.jsonl")
-            total += n
-            log.info(f"  {output_name}: {n} samples")
-    log.info(f"  TOTAL: {total} samples")
-    log.info("=" * 60)
+        # Final status
+        print_status(totals, start_time)
 
 
 def run_verify():
     """Run F# verification on applicable domains."""
-    log.info("=" * 60)
-    log.info("F# VERIFICATION")
-    log.info("=" * 60)
+    print("\n" + "=" * 60)
+    print("  F# VERIFICATION")
+    print("=" * 60)
 
     VERIFIED_DIR.mkdir(parents=True, exist_ok=True)
 
-    for teacher, files in TEACHERS.items():
-        for _, output_name in files:
-            raw_path = RAW_DIR / f"{output_name}.jsonl"
-            verified_path = VERIFIED_DIR / f"{output_name}.jsonl"
+    for output_name in ALL_OUTPUTS:
+        raw_path = RAW_DIR / f"{output_name}.jsonl"
+        verified_path = VERIFIED_DIR / f"{output_name}.jsonl"
 
-            if not raw_path.exists():
-                log.warning(f"  {output_name}: raw file missing, skipping")
-                continue
+        if not raw_path.exists():
+            print(f"  {output_name}: raw file missing, skipping")
+            continue
 
-            if output_name in FSHARP_DOMAINS:
-                log.info(f"  {output_name}: verifying F# samples...")
-                result = subprocess.run(
-                    [
-                        sys.executable,
-                        str(SCRIPT_DIR / "verify_fsharp.py"),
-                        "--input",
-                        str(raw_path),
-                        "--output",
-                        str(verified_path),
-                    ],
-                    cwd=str(SCRIPT_DIR),
-                )
-                if result.returncode != 0:
-                    log.warning(f"  {output_name}: verification had errors")
-            else:
-                log.info(f"  {output_name}: copying (no F# verification needed)")
-                shutil.copy2(raw_path, verified_path)
+        if output_name in FSHARP_DOMAINS:
+            print(f"  {output_name}: verifying F# samples...")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT_DIR / "verify_fsharp.py"),
+                    "--input",
+                    str(raw_path),
+                    "--output",
+                    str(verified_path),
+                ],
+                cwd=str(SCRIPT_DIR),
+            )
+            if result.returncode != 0:
+                print(f"  {output_name}: verification had errors")
+        else:
+            print(f"  {output_name}: copying (no F# verification needed)")
+            shutil.copy2(raw_path, verified_path)
 
 
 def run_format():
     """Format verified data for training."""
-    log.info("=" * 60)
-    log.info("FORMATTING DATASET")
-    log.info("=" * 60)
+    print("\n" + "=" * 60)
+    print("  FORMATTING DATASET")
+    print("=" * 60)
 
     subprocess.run(
         [
@@ -231,21 +372,6 @@ def run_format():
     )
 
 
-def print_progress():
-    """Print current progress across all domains."""
-    total = 0
-    print(f"\n{'Domain':<30s} {'Samples':>8s}")
-    print("-" * 40)
-    for teacher, files in TEACHERS.items():
-        for _, output_name in files:
-            n = count_lines(RAW_DIR / f"{output_name}.jsonl")
-            total += n
-            print(f"  {output_name:<28s} {n:>8d}")
-    print("-" * 40)
-    print(f"  {'TOTAL':<28s} {total:>8d}")
-    print()
-
-
 def main():
     parser = argparse.ArgumentParser(description="Parallel Training Data Generation")
     parser.add_argument(
@@ -260,22 +386,29 @@ def main():
         help="Also run verification and formatting after generation",
     )
     parser.add_argument(
-        "--status", action="store_true", help="Just print current progress and exit"
+        "--verbose",
+        action="store_true",
+        help="Show per-line logs instead of status dashboard",
+    )
+    parser.add_argument(
+        "--status",
+        action="store_true",
+        help="Just print current progress and exit",
     )
     args = parser.parse_args()
 
     if args.status:
-        print_progress()
+        totals = get_totals()
+        print_status(totals)
         return
 
-    asyncio.run(generate_all(args.concurrency))
+    asyncio.run(generate_all(args.concurrency, args.verbose))
 
     if args.verify:
         run_verify()
         run_format()
 
-    print_progress()
-    log.info("Done! Run with --verify to also verify F# and format the dataset.")
+    print("\nDone! Run with --verify to also verify F# and format the dataset.")
 
 
 if __name__ == "__main__":
